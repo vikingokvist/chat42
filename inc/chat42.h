@@ -90,8 +90,10 @@ extern pthread_mutex_t hash_table_mutex;
 extern int             udp_sockfd;
 void            *tcp_thread_func(void* arg);
 void            *udp_thread_func(void* arg);
+void send_tcp_message(t_client *client, const char *msg);
 
 
-void            handle_commands(char *strs);
+void            handle_commands(const char *input);
+void            cleanup_and_exit(int signo);
 
 #endif

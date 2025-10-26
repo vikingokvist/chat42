@@ -79,12 +79,60 @@ char *get_user_id(void) {
 	return (result);
 }
 
-void    handle_commands(char *strs) {
+void handle_commands(const char *input)
+{
+	char line_copy[BUF_SIZE];
+	char *cmd, *arg, *msg;
 
-    if (strncmp("--help", strs, 7) == 0)
-        printf(HELP_MSG);
-    else if (strncmp("--version", strs, 10) == 0)
-        printf(VERSION_MSG);
-    else if (strncmp("--colour-list", strs, 14) == 0)
-        printf("%s", LIST_COLOURS);
+	/* make a safe copy, since strtok modifies it */
+	strncpy(line_copy, input, BUF_SIZE - 1);
+	line_copy[BUF_SIZE - 1] = '\0';
+
+	cmd = strtok(line_copy, " ");
+	if (!cmd || strcmp(cmd, "chat42") != 0)
+		return ;
+
+	arg = strtok(NULL, " ");
+	if (!arg)
+		return ;
+
+	/* built-in options */
+	if (strcmp(arg, "--disconnect") == 0) {
+		// broadcast_udp("off;", own_user_id);
+		cleanup_and_exit(0);
+	}
+
+	else if (strcmp(arg, "--help") == 0) {
+		printf("%s", HELP_MSG);
+		fflush(stdout);
+		return ;
+	}
+
+	else if (strcmp(arg, "--colour-list") == 0) {
+		printf("%s", LIST_COLOURS);
+		fflush(stdout);
+		return ;
+	}
+
+	else {
+
+		msg = strtok(NULL, "");
+		if (!msg || !*msg) {
+			printf("usage: chat42 <username> \"message\"\n");
+			fflush(stdout);
+			return ;
+		}
+
+		pthread_mutex_lock(&hash_table_mutex);
+		t_client *client = hashtable_search(users_table, arg);
+		pthread_mutex_unlock(&hash_table_mutex);
+
+		if (!client) {
+			printf("User '%s' not found\n", arg);
+			fflush(stdout);
+			return ;
+		}
+		send_tcp_message(client, msg);
+	}
 }
+

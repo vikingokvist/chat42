@@ -34,8 +34,6 @@ ssize_t hashtable_hash(char *user_id) {
 
 int hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user) {
 
-    if (new_user == NULL)
-        return (1);
     int index = hashtable_hash(new_user->name_loc);
     if (users_table[index] != NULL) {
         return (1);
