@@ -7,7 +7,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
+extern char            *own_user_id;
 
 #define HELP_MSG  "\
 usage: chat42 [--version] [--help] [--login] [<username> + <message>]\n\
@@ -22,7 +24,12 @@ These are common chat42 commands used in various situations:\n\n\
   --colour-set <colour::colour>  Set profile colours.\n\
   <username> + <message>         Send message to username.\n"
 
+
+
+
 #define VERSION_MSG "chat42 pre-pre-alpha 0.0.1\n"
+
+
 
 #define RESET       "\x1b[0m"
 #define BLACK       "\x1b[0;30m"
@@ -50,16 +57,41 @@ These are common chat42 commands used in various situations:\n\n\
 #define BG_CYAN      "\x1b[46m"
 #define BG_WHITE     "\x1b[47m"
 
+char            *get_user_id(void);
+const char      *get_color_code(const char *name);
+
+
+
 #define BUF_SIZE 1024
-#define UDP_PORT 50001
-#define TCP_PORT 50002
+#define TABLE_MAX_SIZE 6
 
 typedef struct s_client {
 
-  struct sockaddr_in  addr;
-	char user_id[BUF_SIZE];
-} t_client;
+    struct sockaddr_in  addr;
+    char                name_loc[BUF_SIZE];
+}   t_client;
 
+extern t_client *users_table[TABLE_MAX_SIZE];
+
+void            hashtable_init(t_client *users_table[TABLE_MAX_SIZE]);
+void            print_client(t_client *users_table[TABLE_MAX_SIZE]);
+ssize_t         hashtable_hash(char *user_id);
+int             hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user);
+t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *user_id);
+t_client        *hashtable_add(char *user_id, struct sockaddr_in *addr);
+void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *user_id);
+
+
+
+#define UDP_PORT 50001
+#define TCP_PORT 50002
+
+extern pthread_mutex_t hash_table_mutex;
+extern int             udp_sockfd;
+void            *tcp_thread_func(void* arg);
+void            *udp_thread_func(void* arg);
+
+
+void            handle_commands(char *strs);
 
 #endif
-

@@ -51,13 +51,11 @@ const char *get_color_code(const char *name) {
 
 
 char *get_user_id(void) {
-
+	
 	char host[BUF_SIZE];
 	char *user;
 	char *result;
 	size_t len;
-	const char *color_host = WHITE;
-	const char *color_user = WHITE;
 
 	if (gethostname(host, sizeof(host) - 1) != 0)
 		return NULL;
@@ -69,33 +67,14 @@ char *get_user_id(void) {
 	if (!user)
 		user = "unknown";
 
-	char *colors_env = getenv("CHAT42_COLOURS");
-	if (colors_env) {
-		char tmp[BUF_SIZE];
-		strncpy(tmp, colors_env, sizeof(tmp)-1);
-		tmp[sizeof(tmp)-1] = '\0';
-		char *sep = strstr(tmp, "::");
-		if (sep) {
-			*sep = '\0';
-			color_host = get_color_code(tmp);
-			color_user = get_color_code(sep + 2);
-		} else {
-			color_host = get_color_code(tmp);
-		}
-	}
-
-	len = strlen(color_host) + strlen(host) + strlen(RESET)
-	    + 2
-	    + strlen(color_user) + strlen(user) + strlen(RESET)
-	    + 1;
+	len = 4 + strlen(host) + 2 + strlen(user) + 1;
 
 	result = (char *)malloc(len);
 	if (!result)
-		return (NULL);
+		return NULL;
 
-	snprintf(result, len, "%s%s%s::%s%s%s",
-		color_host, host, RESET,
-		color_user, user, RESET);
+	memcpy(result, "onn;", 4);
+	snprintf(result + 4, len - 4, "%s::%s", host, user);
 
 	return (result);
 }

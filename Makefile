@@ -6,7 +6,7 @@ LDFLAGS = -lpthread
 
 RM = rm -rf
 
-SRCS = src/main.c src/tcp_thread.c src/udp_thread.c src/utils.c
+SRCS = src/main.c src/tcp_thread.c src/udp_thread.c src/utils.c src/hash_table.c
 OBJDIR = objs
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
