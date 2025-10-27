@@ -2,75 +2,116 @@
 
 pthread_mutex_t hash_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 t_client        *users_table[TABLE_MAX_SIZE];
-char            *own_user_id;
-int             udp_sockfd;
+t_udp    udp_struct;
+t_tcp    tcp_struct;
 
-void cleanup_and_exit(int signo)
+const char *LIST_COLOURS = 
+BLACK "BLACK " RESET
+RED "RED " RESET
+GREEN "GREEN " RESET
+YELLOW "YELLOW " RESET
+BLUE "BLUE " RESET
+MAGENTA "MAGENTA " RESET
+CYAN "CYAN " RESET
+WHITE "WHITE " RESET
+BOLD_BLACK "BOLD_BLACK " RESET
+BOLD_RED "BOLD_RED \n" RESET
+BOLD_GREEN "BOLD_GREEN " RESET
+BOLD_YELLOW "BOLD_YELLOW " RESET
+BOLD_BLUE "BOLD_BLUE " RESET
+BOLD_MAGENTA "BOLD_MAGENTA " RESET
+BOLD_CYAN "BOLD_CYAN " RESET
+BOLD_WHITE "BOLD_WHITE\n" RESET
+BG_BLACK "BG_BLACK" RESET " "
+BG_RED "BG_RED" RESET " "
+BG_GREEN "BG_GREEN" RESET " "
+BG_YELLOW "BG_YELLOW" RESET " "
+BG_BLUE "BG_BLUE" RESET " "
+BG_MAGENTA "BG_MAGENTA" RESET " "
+BG_CYAN "BG_CYAN" RESET " "
+BG_WHITE "BG_WHITE" RESET " \n";
+
+void handle_commands(const char *input)
 {
-    (void)signo;
-    memcpy(own_user_id, "off;", 4);
-    size_t id_len = strlen(own_user_id);
-	pthread_mutex_lock(&hash_table_mutex);
+	char line_copy[BUF_SIZE];
+	char *cmd, *arg, *msg;
 
-	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
+	strncpy(line_copy, input, BUF_SIZE - 1);
+	line_copy[BUF_SIZE - 1] = '\0';
 
-		if (users_table[i]) {
-			sendto(udp_sockfd, own_user_id, id_len, 0,(struct sockaddr*)&users_table[i]->addr, sizeof(users_table[i]->addr));
-			free(users_table[i]);
-			users_table[i] = NULL;
-		}
+	cmd = strtok(line_copy, " ");
+	if (!cmd || strcmp(cmd, "chat42") != 0)
+		return ;
+
+	arg = strtok(NULL, " ");
+	if (!arg)
+		return ;
+
+	if (strcmp(arg, "--disconnect") == 0) {
+		memcpy(udp_struct.PLACE_USER_ID, "0;", 4);
+		cleanup_and_exit(0);
 	}
+	// else if (strcmp(arg, "--help") == 0) {
+	// 	printf("%s", HELP_MSG);
+	// 	fflush(stdout);
+	// 	return ;
+	// }
+	// else if (strcmp(arg, "--colour-list") == 0) {
+	// 	printf("%s", LIST_COLOURS);
+	// 	fflush(stdout);
+	// 	return ;
+	// }
+	else {
 
-	pthread_mutex_unlock(&hash_table_mutex);
+		msg = strtok(NULL, "");
+		if (!msg || !*msg) {
+			printf("usage: chat42 <username> \"message\"\n");
+			fflush(stdout);
+			return ;
+		}
 
-    if (udp_sockfd)
-	    close(udp_sockfd);
-    free(own_user_id);
-	printf("\nServer shutdown cleanly.\n");
-	exit(0);
+		pthread_mutex_lock(&hash_table_mutex);
+		t_client *client = hashtable_search(users_table, arg);
+		if (!client) {
+			printf("User '%s' not found\n", arg);
+			fflush(stdout);
+			pthread_mutex_unlock(&hash_table_mutex);
+			return ;
+		}
+		send_tcp_message(client, msg);
+		pthread_mutex_unlock(&hash_table_mutex);
+	}
 }
+
 
 int main(int argc, char **argv) {
 
     if (argc < 2) {
         return (printf(HELP_MSG), 1);
     }
-
-    if (strncmp("--connect", argv[1], 9) != 0) {
-        handle_commands(argv[1]);
+    else if (strncmp("--connect", argv[1], 9) != 0) {
+        return (handle_commands(argv[1]), 0);
     }
-    else {
+    signal(SIGINT, cleanup_and_exit);
+    hashtable_init(users_table);
 
-        own_user_id = get_user_id();
-        if (!own_user_id)
-            return (1);
+    if (udp_struct_init(&udp_struct))
+        return (cleanup_and_exit(1), 1);
+    if (tcp_struct_init(&tcp_struct))
+        return (cleanup_and_exit(1), 1);
+    
+    char line[BUF_SIZE];
 
-        pthread_t       udp_thread;
-        pthread_t       tcp_thread;
+    while (fgets(line, BUF_SIZE, stdin)) {
 
+        size_t line_len = strcspn(line, "\n");
+        line[line_len] = 0;
+        if (strncmp(line, "chat42 --disconnect", 19) == 0)
+            break ;
+        handle_commands(line);
 
-        hashtable_init(users_table);
-
-        signal(SIGINT, cleanup_and_exit);
-        if (pthread_create(&udp_thread, NULL, udp_thread_func, own_user_id) == -1)
-            return (cleanup_and_exit(1), 1);
-        if (pthread_create(&tcp_thread, NULL, tcp_thread_func, NULL) == -1)
-            return (pthread_cancel(udp_thread), cleanup_and_exit(1), 1);
-
-        char line[BUF_SIZE];
-        while (fgets(line, BUF_SIZE, stdin)) {
-
-            size_t line_len = strcspn(line, "\n");
-            line[line_len] = 0;
-            if (strncmp(line, "chat42 --disconnect", 19) == 0)
-                break ;
-            handle_commands(line);
-        }
-        pthread_cancel(udp_thread);
-        pthread_cancel(tcp_thread);
-        pthread_join(udp_thread, NULL);
-        pthread_join(tcp_thread, NULL);
-        cleanup_and_exit(1);
     }
+
+    cleanup_and_exit(1);
     return (0);
 }

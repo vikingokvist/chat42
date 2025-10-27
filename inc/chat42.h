@@ -57,11 +57,9 @@ These are common chat42 commands used in various situations:\n\n\
 #define BG_CYAN      "\x1b[46m"
 #define BG_WHITE     "\x1b[47m"
 
-char            *get_user_id(void);
-const char      *get_color_code(const char *name);
 
-
-
+#define UDP_PORT 50001
+#define TCP_PORT 50002
 #define BUF_SIZE 1024
 #define TABLE_MAX_SIZE 6
 
@@ -73,6 +71,36 @@ typedef struct s_client {
 
 extern t_client *users_table[TABLE_MAX_SIZE];
 
+typedef struct s_tcp {
+
+  char      *USER_ID;
+  char      *PLACE_USER_ID;
+  size_t    USER_ID_LEN;
+  int       sockfd;
+  struct sockaddr_in servaddr;
+  int       opt;
+  t_client **users_table;
+  pthread_t tcp_thread;
+
+} t_tcp;
+
+typedef struct s_udp {
+
+  char      *USER_ID;
+  char      *PLACE_USER_ID;
+  size_t    USER_ID_LEN;
+  int       sockfd;
+  int       opt;
+  struct sockaddr_in servaddr;
+  t_client **users_table;
+  pthread_t udp_thread;
+
+} t_udp;
+
+extern pthread_mutex_t  hash_table_mutex;
+extern t_tcp            tcp_struct;
+extern t_udp            udp_struct; 
+
 void            hashtable_init(t_client *users_table[TABLE_MAX_SIZE]);
 void            print_client(t_client *users_table[TABLE_MAX_SIZE]);
 ssize_t         hashtable_hash(char *user_id);
@@ -80,19 +108,14 @@ int             hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client
 t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *user_id);
 t_client        *hashtable_add(char *user_id, struct sockaddr_in *addr);
 void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *user_id);
-
-
-
-#define UDP_PORT 50001
-#define TCP_PORT 50002
-
-extern pthread_mutex_t hash_table_mutex;
-extern int             udp_sockfd;
-void            *tcp_thread_func(void* arg);
-void            *udp_thread_func(void* arg);
-void send_tcp_message(t_client *client, const char *msg);
-
-
+char            *get_user_name(void);
+char            *get_user_info(int mode);
+const char      *get_color_code(const char *name);
+void            *tcp_thread_func(void* tcp_struct);
+int              tcp_struct_init(t_tcp  *tcp_struct);
+void             send_tcp_message(t_client *client, const char *msg);
+void            *udp_thread_func(void* udp_struct);
+int             udp_struct_init(t_udp  *udp_struct);
 void            handle_commands(const char *input);
 void            cleanup_and_exit(int signo);
 

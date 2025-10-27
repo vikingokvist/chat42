@@ -46,7 +46,7 @@ t_client *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *user_id)
 
     if (!user_id || strlen(user_id) < 5)
         return (NULL);
-    char *trimmed_id = user_id + 4;
+    char *trimmed_id = user_id + 2;
     int index = hashtable_hash(trimmed_id);
     if (users_table[index] != NULL && strncmp(users_table[index]->name_loc, trimmed_id, BUF_SIZE) == 0)
         return (users_table[index]);
@@ -58,7 +58,7 @@ void    hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *user_id) {
 
     if (!user_id || strlen(user_id) < 5)
         return ;
-    char *trimmed_id = user_id + 4;
+    char *trimmed_id = user_id + 2;
     int index = hashtable_hash(trimmed_id);
     if (users_table[index] != NULL && strncmp(users_table[index]->name_loc, trimmed_id, BUF_SIZE) == 0) {
         free(users_table[index]);
@@ -73,7 +73,7 @@ t_client *hashtable_add(char *user_id, struct sockaddr_in *addr)
     t_client *new_user = malloc(sizeof(t_client));
     if (!new_user)
         return (NULL);
-    char *trimmed_id = user_id + 4;
+    char *trimmed_id = user_id + 2;
     memcpy(&new_user->addr, addr, sizeof(struct sockaddr_in));
     strncpy(new_user->name_loc, trimmed_id, BUF_SIZE - 1);
     new_user->name_loc[BUF_SIZE - 1] = '\0';

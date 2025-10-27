@@ -1,42 +1,25 @@
 #include "../inc/chat42.h"
 
 
-void    *udp_thread_func(void* user) {
+void    *udp_thread_func(void* udp_struct) {
 
-    char               user_id[BUF_SIZE];
-	strncpy(user_id, (char *)user, BUF_SIZE - 1);
-	user_id[BUF_SIZE - 1] = '\0';
-	size_t user_id_len = strlen(user_id);
-
-
-    struct sockaddr_in servaddr;
-    struct sockaddr_in cliaddr;
+    t_udp              *udp = (t_udp *)udp_struct;
     char               clients_buffer[BUF_SIZE];
-    socklen_t          len = sizeof(cliaddr);
+    struct sockaddr_in cliaddr;
+    socklen_t          client_len = sizeof(cliaddr);
     
-
-    udp_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (udp_sockfd < 0)
-        return (NULL);
-
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = INADDR_ANY;
-    servaddr.sin_port = htons(UDP_PORT);
-
-
-    if (bind(udp_sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0)
-        return (NULL);
 
     while (1) {
 
-        ssize_t n = recvfrom(udp_sockfd, clients_buffer, BUF_SIZE - 1, 0, (struct sockaddr*)&cliaddr, &len);
+        ssize_t n = recvfrom(udp->sockfd, clients_buffer, BUF_SIZE - 1, 0, (struct sockaddr*)&cliaddr, &client_len);
         if (n > 0) {
             
             clients_buffer[n] = '\0';
             pthread_mutex_lock(&hash_table_mutex);
-            if (strncmp("onn;", clients_buffer, 4) == 0) {
-                if (hashtable_search(users_table, clients_buffer) == NULL) {
+            if (strncmp("1;", clients_buffer, 2) == 0) {
+
+                if (hashtable_search(udp->users_table, clients_buffer) == NULL) {
+                    
                       t_client *new_user = hashtable_add(clients_buffer, &cliaddr);
                       if (!new_user) {
                           pthread_mutex_unlock(&hash_table_mutex);
@@ -47,21 +30,52 @@ void    *udp_thread_func(void* user) {
                           pthread_mutex_unlock(&hash_table_mutex);
                           continue ;
                       }
-                      print_client(users_table);
+                      print_client(udp->users_table);
                   }
 
             }
-            else if (strncmp("off;", clients_buffer, 4) == 0) {
-                hashtable_delete(users_table, user);
+            else if (strncmp("0;", clients_buffer, 2) == 0) {
+
+                hashtable_delete(udp->users_table, clients_buffer);
                 pthread_mutex_unlock(&hash_table_mutex);
-                print_client(users_table);
+                print_client(udp->users_table);
                 continue ;
             }
             pthread_mutex_unlock(&hash_table_mutex);
         }
-        sendto(udp_sockfd, user_id, user_id_len, 0, (struct sockaddr*)&cliaddr, len);
+        sendto(udp->sockfd, udp->PLACE_USER_ID, udp->USER_ID_LEN, 0, (struct sockaddr*)&cliaddr, sizeof(cliaddr));
 
     }
+}
 
-    close(udp_sockfd);
+
+int udp_struct_init(t_udp  *udp_struct) {
+
+    udp_struct->USER_ID = get_user_info(0);
+    udp_struct->PLACE_USER_ID = get_user_info(1);
+    udp_struct->USER_ID_LEN = strlen(udp_struct->PLACE_USER_ID);
+    udp_struct->sockfd = -1;
+    udp_struct->users_table = users_table;
+    udp_struct->opt = 1;
+
+    udp_struct->sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (udp_struct->sockfd < 0) {
+
+        return (1);
+    }
+    setsockopt(udp_struct->sockfd, SOL_SOCKET, SO_BROADCAST, &udp_struct->opt, sizeof(udp_struct->opt));
+    memset(&udp_struct->servaddr, 0, sizeof(udp_struct->servaddr));
+    udp_struct->servaddr.sin_family = AF_INET;
+    udp_struct->servaddr.sin_addr.s_addr = INADDR_ANY;
+    udp_struct->servaddr.sin_port = htons(UDP_PORT);
+    if (bind(udp_struct->sockfd, (struct sockaddr*)&udp_struct->servaddr, sizeof(udp_struct->servaddr)) < 0) {
+    
+        return (1);
+    }
+
+    if (pthread_create(&udp_struct->udp_thread, NULL, udp_thread_func, (void*)udp_struct) == -1) {
+
+        return (1);
+    }
+    return (0);
 }
