@@ -45,7 +45,7 @@ int tcp_struct_init(t_tcp  *tcp_struct) {
     setsockopt(tcp_struct->sockfd, SOL_SOCKET, SO_REUSEADDR, &tcp_struct->opt, sizeof(tcp_struct->opt));
     memset(&tcp_struct->servaddr, 0, sizeof(tcp_struct->servaddr));
     tcp_struct->servaddr.sin_family = AF_INET;
-    tcp_struct->servaddr.sin_addr.s_addr = inet_addr("192.168.122.255");
+    tcp_struct->servaddr.sin_addr.s_addr = INADDR_ANY;
     tcp_struct->servaddr.sin_port = htons(TCP_PORT);
 
     if (bind(tcp_struct->sockfd, (struct sockaddr*)&tcp_struct->servaddr, sizeof(tcp_struct->servaddr)) < 0) {
