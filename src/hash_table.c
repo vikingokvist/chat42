@@ -14,19 +14,19 @@ void print_client(t_client *users_table[TABLE_MAX_SIZE]) {
         if (users_table[i] == NULL)
             printf("[%d] = NULL\n", i);
         else
-            printf("[%d] = %s\n", i, users_table[i]->name_loc);
+            printf("[%d] = %s::%s\n", i, users_table[i]->MACHINE_ID, users_table[i]->USERNAME);
     }
 }
 
-ssize_t hashtable_hash(char *user_id) {
+ssize_t hashtable_hash(char *new_username) {
 
-    if (!user_id)
+    if (!new_username)
         return (-1);
     size_t hash_value = 0;
-    for (size_t i = 0; i < strlen(user_id); i++) {
+    for (size_t i = 0; i < strlen(new_username); i++) {
 
-        hash_value += user_id[i];
-        hash_value = (hash_value * user_id[i]) % TABLE_MAX_SIZE;
+        hash_value += new_username[i];
+        hash_value = (hash_value * new_username[i]) % TABLE_MAX_SIZE;
     }
     return (hash_value);
 }
@@ -34,48 +34,59 @@ ssize_t hashtable_hash(char *user_id) {
 
 int hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user) {
 
-    int index = hashtable_hash(new_user->name_loc);
+    int index = hashtable_hash(new_user->USERNAME);
     if (users_table[index] != NULL) {
+
         return (1);
     }
     users_table[index] = new_user;
     return (0);
 }
 
-t_client *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *user_id) {
+t_client *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *new_username) {
 
-    if (!user_id || strlen(user_id) < 5)
+    if (!new_username)
         return (NULL);
-    char *trimmed_id = user_id + 2;
-    int index = hashtable_hash(trimmed_id);
-    if (users_table[index] != NULL && strncmp(users_table[index]->name_loc, trimmed_id, BUF_SIZE) == 0)
+    int index = hashtable_hash(new_username);
+    if (users_table[index] != NULL && strncmp(users_table[index]->USERNAME, new_username, BUF_SIZE) == 0) {
+
         return (users_table[index]);
-    else
-        return (NULL);
+    }
+    return (NULL);
 }
 
-void    hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *user_id) {
+void    hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *new_username) {
 
-    if (!user_id || strlen(user_id) < 5)
+    if (!new_username)
         return ;
-    char *trimmed_id = user_id + 2;
-    int index = hashtable_hash(trimmed_id);
-    if (users_table[index] != NULL && strncmp(users_table[index]->name_loc, trimmed_id, BUF_SIZE) == 0) {
+    int index = hashtable_hash(new_username);
+    if (users_table[index] != NULL && strncmp(users_table[index]->USERNAME, new_username, BUF_SIZE) == 0) {
+
         free(users_table[index]);
         users_table[index] = NULL;
     }
 }
 
-t_client *hashtable_add(char *user_id, struct sockaddr_in *addr)
+t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *new_username, char *new_machine_id)
 {
-    if (!addr || !user_id || strlen(user_id) < 5)
+    if (!new_cliaddr || !new_username || !new_machine_id)
         return (NULL);
     t_client *new_user = malloc(sizeof(t_client));
     if (!new_user)
         return (NULL);
-    char *trimmed_id = user_id + 2;
-    memcpy(&new_user->addr, addr, sizeof(struct sockaddr_in));
-    strncpy(new_user->name_loc, trimmed_id, BUF_SIZE - 1);
-    new_user->name_loc[BUF_SIZE - 1] = '\0';
+
+    struct sockaddr_in NEW_CLIENT_ADDR;
+
+    memset(&NEW_CLIENT_ADDR, 0, sizeof(NEW_CLIENT_ADDR));
+    NEW_CLIENT_ADDR.sin_family = AF_INET;
+    NEW_CLIENT_ADDR.sin_addr.s_addr = new_cliaddr->sin_addr.s_addr;
+    NEW_CLIENT_ADDR.sin_port = htons(TCP_PORT);
+    memcpy(&new_user->CLIENT_ADDR, &NEW_CLIENT_ADDR, sizeof(struct sockaddr_in));
+
+    strncpy(new_user->USERNAME, new_username, 64 - 1);
+    new_user->USERNAME[63] = '\0';
+    strncpy(new_user->MACHINE_ID, new_machine_id, 64 - 1);
+    new_user->MACHINE_ID[63] = '\0';
+
     return (new_user);
 }
