@@ -60,6 +60,8 @@ These are common chat42 commands used in various situations:\n\n\
 
 #define TCP_PORT 5000
 #define UDP_PORT 6000
+#define UDP_SEND_ADDRESS "127.0.0.1"
+//"192.168.1.255"
 #define BUF_SIZE 1024
 #define TABLE_MAX_SIZE 6
 
@@ -74,39 +76,41 @@ extern t_client *users_table[TABLE_MAX_SIZE];
 
 typedef struct s_tcp {
 
-  char      *OWN_USERNAME;
-  char      *OWN_USER_MACHINE_ID;
-  size_t    OWN_USER_MACHINE_LEN;
-  int       sockfd;
-  struct sockaddr_in servaddr;
-  int       opt;
-  t_client **users_table;
-  pthread_t tcp_thread;
+  char                *OWN_USERNAME;
+  char                *OWN_USER_MACHINE_ID;
+  size_t              OWN_USER_MACHINE_LEN;
+  int                 sockfd;
+  struct sockaddr_in  receive_addr;
+  struct sockaddr_in  send_addr;
+  int                 opt;
+  t_client            **users_table;
+  pthread_t           thread;
 
 } t_tcp;
 
 typedef struct s_udp {
 
-  char      *OWN_USERNAME;
-  char      *OWN_USER_MACHINE_ID;
-  size_t    OWN_USER_MACHINE_LEN;
-  int       sockfd;
-  int       opt;
-  struct sockaddr_in servaddr;
-  t_client **users_table;
-  pthread_t udp_thread;
+  char                *OWN_USERNAME;
+  char                *OWN_USER_MACHINE_ID;
+  size_t              OWN_USER_MACHINE_LEN;
+  int                 sockfd;
+  int                 opt;
+  struct sockaddr_in  receive_addr;
+  struct sockaddr_in  send_addr;
+  t_client            **users_table;
+  pthread_t           thread;
 
 } t_udp;
 
 extern pthread_mutex_t  hash_table_mutex;
-extern t_tcp            tcp_struct;
-extern t_udp            udp_struct; 
+extern t_tcp            tcp;
+extern t_udp            udp; 
 
-t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *new_username, char *new_machine_id);
-void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *new_username);
-t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *new_username);
+t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id, int tcp_port);
+void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *username);
+t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *username);
 int             hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user);
-ssize_t         hashtable_hash(char *new_username);
+ssize_t         hashtable_hash(char *username);
 void            print_client(t_client *users_table[TABLE_MAX_SIZE]);
 void            hashtable_init(t_client *users_table[TABLE_MAX_SIZE]);
 
@@ -114,14 +118,14 @@ char            *get_user_name(void);
 char            *get_user_info(int mode);
 const char      *get_color_code(const char *name);
 
-int              tcp_struct_init(t_tcp  *tcp_struct);
+int              tcp_struct_init(t_tcp  *tcp_struct, int tcp_port);
 void            *tcp_thread_func(void* tcp_struct);
 void             send_tcp_message(t_client *client, const char *msg);
 
-int             udp_struct_init(t_udp  *udp_struct);
+int             udp_struct_init(t_udp  *udp, int udp_port);
 void            *udp_thread_func(void* udp_struct);
-int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *new_machine_id, char *new_username);
-void            udp_delete_user(t_udp *udp,  char *new_username);
+int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username, int tcp_port);
+void            udp_delete_user(t_udp *udp,  char *username);
 
 void            handle_commands(const char *input);
 void            cleanup_and_exit();
