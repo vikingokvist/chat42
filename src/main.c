@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     else if (strncmp("--connect", argv[1], 9) != 0) {
         return (handle_commands(argv[1]), 0);
     }
-	
+
     signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
     hashtable_init(users_table);
@@ -65,16 +65,6 @@ void handle_commands(const char *input)
 		cleanup_and_exit();
 		return ;
 	}
-	// else if (strcmp(arg, "--help") == 0) {
-	// 	printf("%s", HELP_MSG);
-	// 	fflush(stdout);
-	// 	return ;
-	// }
-	// else if (strcmp(arg, "--colour-list") == 0) {
-	// 	printf("%s", LIST_COLOURS);
-	// 	fflush(stdout);
-	// 	return ;
-	// }
 	else {
 		if (*input == '\0') {
 			printf("usage: chat42 <username> \"message\"\n");

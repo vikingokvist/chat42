@@ -9,11 +9,9 @@
 
 type: chat\r\n
 version: 1\r\n
-timestamp: 2025-10-25T12:34:56Z\r\n
 from-user: john@mac-os::john\r\n
 color-user: blue::pink\r\n
 to-user: mary@mac-os::mary\r\n
-msg-id: 7f23a5e2\r\n
 message-length: 22\r\n
 message: hellooooo how are you\r\n
 \r\n

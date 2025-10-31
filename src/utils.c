@@ -73,7 +73,7 @@ char *get_user_info(int mode)
 
         char *p = strchr(session, '/');
         if (p) {
-            p++; /* move past '/' */
+            p++;
             char *end = strchr(p, '.');
             if (!end)
                 end = strchr(p, ':');
