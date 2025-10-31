@@ -55,25 +55,24 @@ void    *udp_thread_func(void* arg) {
 
     while (1) {
 
-        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
         ssize_t n = recvfrom(udp->sockfd, clients_buffer, BUF_SIZE - 1, 0, (struct sockaddr*)&new_cliaddr, &addr_len);
         if (n > 0) {
             
             clients_buffer[n] = '\0';
             char status, machine_id[64], username[64];
-            int tcp_port;
 
-            if  (sscanf(clients_buffer, "%c;%63[^;];%63[^;];%d", &status, machine_id, username, &tcp_port) == 4) {
+            if  (sscanf(clients_buffer, "%c;%63[^;];%63s", &status, machine_id, username) == 3) {
                     if (status == '1') {
 
-                        if (udp_add_user(udp, &new_cliaddr, machine_id, username, tcp_port)) continue ;
+                        if (udp_add_user(udp, &new_cliaddr, machine_id, username)) continue ;
                     }
                     else if (status == '0') {
 
                         hashtable_delete(udp->users_table, username); continue ;
                     }
+                }
             }
-        }
+            sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
         
     }
 }
@@ -85,12 +84,12 @@ void    udp_delete_user(t_udp *udp,  char *username) {
     pthread_mutex_unlock(&hash_table_mutex);
 }
 
-int    udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username, int tcp_port) {
+int    udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username) {
 
     pthread_mutex_lock(&hash_table_mutex);
     if (hashtable_search(udp->users_table, username) == NULL) {
 
-        t_client *new_user = hashtable_add(new_cliaddr, username, machine_id, tcp_port);
+        t_client *new_user = hashtable_add(new_cliaddr, username, machine_id);
         if (!new_user) {
 
             pthread_mutex_unlock(&hash_table_mutex);

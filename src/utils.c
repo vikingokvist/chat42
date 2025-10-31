@@ -52,33 +52,67 @@ const char *get_color_code(const char *name) {
 
 char *get_user_info(int mode)
 {
-	char host[BUF_SIZE];
-	char *user;
-	char *result;
-	size_t len;
+    char host[BUF_SIZE];
+    char *user;
+    char *result;
+    size_t len;
 
-	if (gethostname(host, sizeof(host) - 1) != 0)
-		return (NULL);
-	host[sizeof(host) - 1] = '\0';
 
-	user = getenv("USER");
-	if (!user)
-		user = getenv("LOGNAME");
-	if (!user)
-		user = "unknown";
+    user = getenv("USER");
+    if (!user)
+        user = getenv("LOGNAME");
+    if (!user)
+        user = "unknown";
 
-	len = (mode ? 2 + 1 : 0) + strlen(host) + 2 + strlen(user) + 1;
 
-	result = (char *)malloc(len);
-	if (!result)
-		return (NULL);
+    char *session = getenv("SESSION_MANAGER");
+    char session_id[BUF_SIZE];
+    session_id[0] = '\0';
 
-	if (mode)
-		snprintf(result, len, "1;%s::%s", host, user);
-	else
-		snprintf(result, len, "%s::%s", host, user);
+    if (session) {
 
-	return (result);
+        char *p = strchr(session, '/');
+        if (p) {
+            p++; /* move past '/' */
+            char *end = strchr(p, '.');
+            if (!end)
+                end = strchr(p, ':');
+            if (!end)
+                end = strchr(p, '/');
+            if (end && end > p) {
+                size_t token_len = (size_t)(end - p);
+                if (token_len >= sizeof(session_id))
+                    token_len = sizeof(session_id) - 1;
+                memcpy(session_id, p, token_len);
+                session_id[token_len] = '\0';
+            } else {
+   
+                strncpy(session_id, p, sizeof(session_id) - 1);
+                session_id[sizeof(session_id) - 1] = '\0';
+            }
+        }
+    }
+
+    if (session_id[0] == '\0') {
+        if (gethostname(host, sizeof(host) - 1) != 0)
+            return (NULL);
+        host[sizeof(host) - 1] = '\0';
+        strncpy(session_id, host, sizeof(session_id) - 1);
+        session_id[sizeof(session_id) - 1] = '\0';
+    }
+    len = (mode ? 2 : 0) + strlen(session_id) + 2 + strlen(user) + 1;
+
+    result = malloc(len);
+    if (!result)
+        return (NULL);
+
+    if (mode)
+		snprintf(result, len, "1;%s::%s", session_id, user);
+    else
+		snprintf(result, len, "%s::%s", session_id, user);
+
+	printf("%s\n", result);
+    return result;
 }
 
 

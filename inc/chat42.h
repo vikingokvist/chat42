@@ -107,7 +107,7 @@ extern pthread_mutex_t  hash_table_mutex;
 extern t_tcp            tcp;
 extern t_udp            udp; 
 
-t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id, int tcp_port);
+t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
 void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *username);
 t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *username);
 int             hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user);
@@ -125,7 +125,7 @@ void             send_tcp_message(t_client *client, const char *msg);
 
 int             udp_struct_init(t_udp  *udp);
 void            *udp_thread_func(void* udp_struct);
-int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username, int tcp_port);
+int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username);
 void            udp_delete_user(t_udp *udp,  char *username);
 
 void            handle_commands(const char *input);

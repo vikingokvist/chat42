@@ -67,7 +67,7 @@ void    hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *username) 
     }
 }
 
-t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id, int tcp_port)
+t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id)
 {
     if (!new_cliaddr || !username || !machine_id)
         return (NULL);
@@ -78,7 +78,7 @@ t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *m
     memset(&new_user->CLIENT_ADDR, 0, sizeof(new_user->CLIENT_ADDR));
     new_user->CLIENT_ADDR.sin_family = AF_INET;
     new_user->CLIENT_ADDR.sin_addr.s_addr = new_cliaddr->sin_addr.s_addr;
-    new_user->CLIENT_ADDR.sin_port = htons(tcp_port);
+    new_user->CLIENT_ADDR.sin_port = htons(TCP_PORT);
 
     strncpy(new_user->USERNAME, username, 64 - 1);
     new_user->USERNAME[63] = '\0';
