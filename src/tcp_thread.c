@@ -1,6 +1,6 @@
 #include "../inc/chat42.h"
 
-int tcp_struct_init(t_tcp  *tcp, int tcp_port) {
+int tcp_struct_init(t_tcp  *tcp) {
 
     tcp->OWN_USERNAME = get_user_name();
     tcp->OWN_USER_MACHINE_ID = get_user_info(0);
@@ -21,7 +21,7 @@ int tcp_struct_init(t_tcp  *tcp, int tcp_port) {
     memset(&tcp->receive_addr, 0, sizeof(tcp->receive_addr));
     tcp->receive_addr.sin_family = AF_INET;
     tcp->receive_addr.sin_addr.s_addr = INADDR_ANY;
-    tcp->receive_addr.sin_port = htons(tcp_port);
+    tcp->receive_addr.sin_port = htons(TCP_PORT);
 
 
     if (bind(tcp->sockfd, (struct sockaddr*)&tcp->receive_addr, sizeof(tcp->receive_addr)) < 0) {

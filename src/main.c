@@ -16,21 +16,15 @@ int main(int argc, char **argv) {
     else if (strncmp("--connect", argv[1], 9) != 0) {
         return (handle_commands(argv[1]), 0);
     }
-	if (argc < 4) {
-		printf("usage: ./chat42 --connect <tcp_port> <udp_port>\n");
-		return (1);
-	}
-
-	int tcp_port = atoi(argv[2]);
-	int udp_port = atoi(argv[3]);
+	
     signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
     hashtable_init(users_table);
 
-    if (udp_struct_init(&udp, udp_port))
+    if (udp_struct_init(&udp))
         return (cleanup_and_exit(), 1);
-    if (tcp_struct_init(&tcp, tcp_port))
-        return (cleanup_and_exit(1), 1);
+    // if (tcp_struct_init(&tcp))
+    //     return (cleanup_and_exit(1), 1);
     
     char line[BUF_SIZE];
 

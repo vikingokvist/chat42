@@ -60,8 +60,9 @@ These are common chat42 commands used in various situations:\n\n\
 
 #define TCP_PORT 5000
 #define UDP_PORT 6000
-#define UDP_SEND_ADDRESS "127.0.0.1"
-//"192.168.1.255"
+# ifndef SEND_IP
+#  define SEND_IP "0.0.0.0"
+ #endif
 #define BUF_SIZE 1024
 #define TABLE_MAX_SIZE 6
 
@@ -118,11 +119,11 @@ char            *get_user_name(void);
 char            *get_user_info(int mode);
 const char      *get_color_code(const char *name);
 
-int              tcp_struct_init(t_tcp  *tcp_struct, int tcp_port);
+int              tcp_struct_init(t_tcp  *tcp_struct);
 void            *tcp_thread_func(void* tcp_struct);
 void             send_tcp_message(t_client *client, const char *msg);
 
-int             udp_struct_init(t_udp  *udp, int udp_port);
+int             udp_struct_init(t_udp  *udp);
 void            *udp_thread_func(void* udp_struct);
 int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username, int tcp_port);
 void            udp_delete_user(t_udp *udp,  char *username);

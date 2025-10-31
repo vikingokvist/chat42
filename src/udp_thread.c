@@ -1,7 +1,7 @@
 #include "../inc/chat42.h"
 
 
-int udp_struct_init(t_udp  *udp, int udp_port) {
+int udp_struct_init(t_udp  *udp) {
 
     udp->OWN_USERNAME = get_user_name();
     udp->OWN_USER_MACHINE_ID = get_user_info(1);
@@ -22,7 +22,7 @@ int udp_struct_init(t_udp  *udp, int udp_port) {
     memset(&udp->receive_addr, 0, sizeof(udp->receive_addr));
     udp->receive_addr.sin_family = AF_INET;
     udp->receive_addr.sin_addr.s_addr = INADDR_ANY;
-    udp->receive_addr.sin_port = htons(udp_port);
+    udp->receive_addr.sin_port = htons(UDP_PORT);
 
     if (bind(udp->sockfd, (struct sockaddr*)&udp->receive_addr, sizeof(udp->receive_addr)) < 0) {
     
@@ -32,8 +32,11 @@ int udp_struct_init(t_udp  *udp, int udp_port) {
 
 	memset(&udp->send_addr, 0, sizeof(udp->send_addr));
 	udp->send_addr.sin_family = AF_INET;
-	udp->send_addr.sin_addr.s_addr = inet_addr("192.168.1.255");//UDP_SEND_ADDRESS
-	udp->send_addr.sin_port = htons(udp_port);
+    if (inet_pton(AF_INET, SEND_IP, &udp->send_addr.sin_addr) <= 0) {
+        perror("inet_pton for send_addr failed");
+        return (1);
+    }
+	udp->send_addr.sin_port = htons(UDP_PORT);
 
     if (pthread_create(&udp->thread, NULL, udp_thread_func, (void*)udp) == -1) {
 
@@ -52,6 +55,7 @@ void    *udp_thread_func(void* arg) {
 
     while (1) {
 
+        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
         ssize_t n = recvfrom(udp->sockfd, clients_buffer, BUF_SIZE - 1, 0, (struct sockaddr*)&new_cliaddr, &addr_len);
         if (n > 0) {
             
@@ -70,8 +74,7 @@ void    *udp_thread_func(void* arg) {
                     }
             }
         }
-        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
-
+        
     }
 }
 
