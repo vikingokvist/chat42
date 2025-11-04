@@ -85,7 +85,8 @@ typedef struct s_tcp {
   struct sockaddr_in  send_addr;
   int                 opt;
   t_client            **users_table;
-  pthread_t           thread;
+  pthread_t           send_thread;
+  pthread_t           receive_thread;
 
 } t_tcp;
 
@@ -99,7 +100,8 @@ typedef struct s_udp {
   struct sockaddr_in  receive_addr;
   struct sockaddr_in  send_addr;
   t_client            **users_table;
-  pthread_t           thread;
+  pthread_t           send_thread;
+  pthread_t           receive_thread;
 
 } t_udp;
 
@@ -124,7 +126,8 @@ void            *tcp_thread_func(void* tcp_struct);
 void             send_tcp_message(t_client *client, const char *msg);
 
 int             udp_struct_init(t_udp  *udp);
-void            *udp_thread_func(void* udp_struct);
+void            *udp_send(void* arg);
+void            *udp_receive(void* arg);
 int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username);
 void            udp_delete_user(t_udp *udp,  char *username);
 

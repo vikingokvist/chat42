@@ -84,6 +84,8 @@ t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *m
     new_user->USERNAME[63] = '\0';
     strncpy(new_user->MACHINE_ID, machine_id, 64 - 1);
     new_user->MACHINE_ID[63] = '\0';
-
+    char ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &new_user->CLIENT_ADDR.sin_addr, ip, sizeof(ip));
+    printf("Saved client %s (%s:%d)\n", new_user->USERNAME, ip, ntohs(new_user->CLIENT_ADDR.sin_port));
     return (new_user);
 }

@@ -6,48 +6,63 @@ int udp_struct_init(t_udp  *udp) {
     udp->OWN_USERNAME = get_user_name();
     udp->OWN_USER_MACHINE_ID = get_user_info(1);
     udp->OWN_USER_MACHINE_LEN = strlen(udp->OWN_USER_MACHINE_ID);
-    udp->sockfd = 1;
     udp->users_table = users_table;
     
     if ((udp->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 
-        perror("udp socket");
-        return (1);
+        return (perror("udp socket"), 1);
     }
     udp->opt = 1;
-
     setsockopt(udp->sockfd, SOL_SOCKET, SO_REUSEADDR, &udp->opt, sizeof(udp->opt));
     setsockopt(udp->sockfd, SOL_SOCKET, SO_BROADCAST, &udp->opt, sizeof(udp->opt));    
+
 
     memset(&udp->receive_addr, 0, sizeof(udp->receive_addr));
     udp->receive_addr.sin_family = AF_INET;
     udp->receive_addr.sin_addr.s_addr = INADDR_ANY;
     udp->receive_addr.sin_port = htons(UDP_PORT);
 
+
     if (bind(udp->sockfd, (struct sockaddr*)&udp->receive_addr, sizeof(udp->receive_addr)) < 0) {
     
-        perror("udp bind");
-        return (1);
+        return (perror("udp bind"), 1);
     }
+
 
 	memset(&udp->send_addr, 0, sizeof(udp->send_addr));
 	udp->send_addr.sin_family = AF_INET;
-    if (inet_pton(AF_INET, SEND_IP, &udp->send_addr.sin_addr) <= 0) {
-        perror("inet_pton for send_addr failed");
-        return (1);
-    }
 	udp->send_addr.sin_port = htons(UDP_PORT);
+    if (inet_pton(AF_INET, SEND_IP, &udp->send_addr.sin_addr) <= 0) {
 
-    if (pthread_create(&udp->thread, NULL, udp_thread_func, (void*)udp) == -1) {
+        return (perror("inet_pton for send_addr failed"), 1);
+    }
 
-        perror("udp thread");
-        return (1);
+
+    if (pthread_create(&udp->send_thread, NULL, udp_send, (void*)udp) == -1) {
+
+        return (perror("udp send thread"), 1);
+    }
+    if (pthread_create(&udp->receive_thread, NULL, udp_receive, (void*)udp) == -1) {
+
+        return (perror("udp send thread"), 1);
     }
     printf("Connected on: %s\n", udp->OWN_USER_MACHINE_ID);
     return (0);
 }
 
-void    *udp_thread_func(void* arg) {
+void    *udp_send(void* arg) {
+
+    t_udp              *udp = (t_udp *)arg;
+
+    while (1) {
+        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 
+                0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
+        sleep(3);
+    }
+    return (NULL);
+}
+
+void    *udp_receive(void* arg) {
 
     t_udp              *udp = (t_udp *)arg;
     char               clients_buffer[BUF_SIZE];
@@ -73,9 +88,9 @@ void    *udp_thread_func(void* arg) {
                     }
             }
         }
-        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
     }
 }
+//        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
 
 void    udp_delete_user(t_udp *udp,  char *username) {
 

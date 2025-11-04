@@ -5,17 +5,15 @@ t_client        *users_table[TABLE_MAX_SIZE];
 t_udp           udp;
 t_tcp           tcp;
 volatile sig_atomic_t shutdown_requested = 0;
-
 void signal_handler(int signo) {(void)signo;shutdown_requested = 1;}
+
 
 int main(int argc, char **argv) {
 
-    if (argc < 2) {
-        return (printf(HELP_MSG), 1);
-    }
-    else if (strncmp("--connect", argv[1], 9) != 0) {
-        return (handle_commands(argv[1]), 0);
-    }
+    if (argc < 2)
+		return (printf(HELP_MSG), 1);
+    else if (strncmp("--connect", argv[1], 9) != 0) 
+		return (handle_commands(argv[1]), 0);
 
     signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);

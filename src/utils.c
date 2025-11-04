@@ -172,10 +172,12 @@ void cleanup_and_exit()
 	if (tcp.OWN_USER_MACHINE_ID)
 		free(tcp.OWN_USER_MACHINE_ID);
 
-	pthread_cancel(udp.thread);
-    pthread_cancel(tcp.thread);
-    pthread_join(udp.thread, NULL);
-    pthread_join(tcp.thread, NULL);
+	pthread_cancel(udp.send_thread);
+    pthread_cancel(tcp.send_thread);
+	pthread_cancel(tcp.receive_thread);
+	pthread_join(udp.receive_thread, NULL);
+    pthread_join(udp.send_thread, NULL);
+    pthread_join(tcp.send_thread, NULL);
 
 	printf("\nServer shutdown cleanly.\n");
 	exit(0);

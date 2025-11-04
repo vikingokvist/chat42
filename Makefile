@@ -13,7 +13,8 @@ OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
 DEPS = $(OBJS:.o=.d)
 
 
-SEND_IP := $(shell ip -4 addr show enp4s0f0 | awk '/inet / {for (i=1;i<=NF;i++) if ($$i=="brd") print $$(i+1)}')
+SEND_IP := "192.168.1.255"
+#$(shell ip -4 addr show enp4s0f0 | awk '/inet / {for (i=1;i<=NF;i++) if ($$i=="brd") print $$(i+1)}')
 
 
 CFLAGS += -DSEND_IP=\"$(SEND_IP)\"
