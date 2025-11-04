@@ -21,10 +21,7 @@ int udp_struct_init(t_udp  *udp) {
 
     memset(&udp->receive_addr, 0, sizeof(udp->receive_addr));
     udp->receive_addr.sin_family = AF_INET;
-    if (inet_pton(AF_INET, OWN_IP, &udp->receive_addr.sin_addr.s_addr) <= 0) {
-        perror("inet_pton for recv_addr failed");
-        return (1);
-    }
+    udp->receive_addr.sin_addr.s_addr = INADDR_ANY;
     udp->receive_addr.sin_port = htons(UDP_PORT);
 
     if (bind(udp->sockfd, (struct sockaddr*)&udp->receive_addr, sizeof(udp->receive_addr)) < 0) {
