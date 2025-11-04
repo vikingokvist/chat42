@@ -23,13 +23,14 @@ int main(int argc, char **argv) {
 
     if (udp_struct_init(&udp))
         return (cleanup_and_exit(), 1);
-    // if (tcp_struct_init(&tcp))
-    //     return (cleanup_and_exit(1), 1);
+    if (tcp_struct_init(&tcp))
+        return (cleanup_and_exit(1), 1);
     
     char line[BUF_SIZE];
 
-    while (fgets(line, BUF_SIZE, stdin)) {
+    while (shutdown_requested == 0) {
 
+		fgets(line, BUF_SIZE, stdin);
         size_t line_len = strcspn(line, "\n");
         line[line_len] = 0;
         if (strncmp(line, "chat42 --disconnect", 19) == 0)

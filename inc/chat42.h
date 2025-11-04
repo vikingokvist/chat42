@@ -60,6 +60,9 @@ These are common chat42 commands used in various situations:\n\n\
 
 #define TCP_PORT 5000
 #define UDP_PORT 6000
+# ifndef OWN_IP
+#  define OWN_IP "0.0.0.0"
+ #endif
 # ifndef SEND_IP
 #  define SEND_IP "0.0.0.0"
  #endif

@@ -6,7 +6,7 @@ int udp_struct_init(t_udp  *udp) {
     udp->OWN_USERNAME = get_user_name();
     udp->OWN_USER_MACHINE_ID = get_user_info(1);
     udp->OWN_USER_MACHINE_LEN = strlen(udp->OWN_USER_MACHINE_ID);
-    udp->sockfd = -1;
+    udp->sockfd = 1;
     udp->users_table = users_table;
     
     if ((udp->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -21,7 +21,10 @@ int udp_struct_init(t_udp  *udp) {
 
     memset(&udp->receive_addr, 0, sizeof(udp->receive_addr));
     udp->receive_addr.sin_family = AF_INET;
-    udp->receive_addr.sin_addr.s_addr = INADDR_ANY;
+    if (inet_pton(AF_INET, OWN_IP, &udp->receive_addr.sin_addr.s_addr) <= 0) {
+        perror("inet_pton for recv_addr failed");
+        return (1);
+    }
     udp->receive_addr.sin_port = htons(UDP_PORT);
 
     if (bind(udp->sockfd, (struct sockaddr*)&udp->receive_addr, sizeof(udp->receive_addr)) < 0) {
@@ -43,6 +46,7 @@ int udp_struct_init(t_udp  *udp) {
         perror("udp thread");
         return (1);
     }
+    
     return (0);
 }
 
@@ -70,10 +74,9 @@ void    *udp_thread_func(void* arg) {
 
                         hashtable_delete(udp->users_table, username); continue ;
                     }
-                }
             }
-            sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
-        
+        }
+        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
     }
 }
 

@@ -111,7 +111,7 @@ char *get_user_info(int mode)
     else
 		snprintf(result, len, "%s::%s", session_id, user);
 
-	printf("%s\n", result);
+	printf("Connected as: %s\n", result);
     return result;
 }
 
