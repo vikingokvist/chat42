@@ -73,8 +73,7 @@ typedef struct s_client {
     char                MACHINE_ID[64];
 }   t_client;
 
-extern t_client *users_table[TABLE_MAX_SIZE];
-
+extern t_client **users_table;
 typedef struct s_tcp {
 
   char                *OWN_USERNAME;
@@ -110,22 +109,22 @@ extern t_tcp            tcp;
 extern t_udp            udp; 
 
 t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
-void            hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *username);
-t_client        *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *username);
-int             hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user);
+void            hashtable_delete(t_client **users_table, char *username) ;
+t_client *hashtable_search(t_client **users_table, char *username) ;
+int             hashtable_insert(t_client **users_table, t_client *new_user);
 ssize_t         hashtable_hash(char *username);
-void            print_client(t_client *users_table[TABLE_MAX_SIZE]);
-void            hashtable_init(t_client *users_table[TABLE_MAX_SIZE]);
+void            print_client(t_client **users_table);
+void            hashtable_init(t_client **users_table);
 
 char            *get_user_name(void);
 char            *get_user_info(int mode);
 const char      *get_color_code(const char *name);
 
-int              tcp_struct_init(t_tcp  *tcp_struct);
+int              tcp_struct_init(t_tcp  *tcp_struct, t_client **users_table);
 void            *tcp_thread_func(void* tcp_struct);
 void             send_tcp_message(t_client *client, const char *msg);
 
-int             udp_struct_init(t_udp  *udp);
+int             udp_struct_init(t_udp  *udp, t_client **users_table);
 void            *udp_send(void* arg);
 void            *udp_receive(void* arg);
 int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username);

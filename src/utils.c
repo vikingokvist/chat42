@@ -150,11 +150,11 @@ void cleanup_and_exit()
     memcpy(udp.OWN_USER_MACHINE_ID, "0;", 2);
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 
-		if (users_table[i]) {
+		if (udp.users_table[i]) {
             sendto(udp.sockfd, udp.OWN_USER_MACHINE_ID, udp.OWN_USER_MACHINE_LEN, 0, 
-                (struct sockaddr*)&users_table[i]->CLIENT_ADDR, sizeof(users_table[i]->CLIENT_ADDR));
-			free(users_table[i]);
-			users_table[i] = NULL;
+                (struct sockaddr*)&udp.users_table[i]->CLIENT_ADDR, sizeof(udp.users_table[i]->CLIENT_ADDR));
+			free(udp.users_table[i]);
+			udp.users_table[i] = NULL;
 		}
 	}
 	pthread_mutex_unlock(&hash_table_mutex);

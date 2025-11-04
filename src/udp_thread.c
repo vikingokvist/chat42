@@ -1,13 +1,12 @@
 #include "../inc/chat42.h"
 
 
-int udp_struct_init(t_udp  *udp) {
+int udp_struct_init(t_udp  *udp, t_client **users_table) {
 
     udp->OWN_USERNAME = get_user_name();
     udp->OWN_USER_MACHINE_ID = get_user_info(1);
     udp->OWN_USER_MACHINE_LEN = strlen(udp->OWN_USER_MACHINE_ID);
     udp->users_table = users_table;
-    
     if ((udp->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 
         return (perror("udp socket"), 1);
@@ -36,6 +35,12 @@ int udp_struct_init(t_udp  *udp) {
 
         return (perror("inet_pton for send_addr failed"), 1);
     }
+    t_client *new_user = hashtable_add(&udp->receive_addr, udp->OWN_USERNAME, udp->OWN_USER_MACHINE_ID);
+    if (!new_user) {
+        return (1) ;
+    }
+    hashtable_insert(udp->users_table, new_user);
+
 
 
     if (pthread_create(&udp->send_thread, NULL, udp_send, (void*)udp) == -1) {
@@ -88,6 +93,7 @@ void    *udp_receive(void* arg) {
                     }
             }
         }
+        sleep(1);
     }
 }
 //        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, udp->OWN_USER_MACHINE_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
@@ -103,10 +109,9 @@ int    udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_i
 
     pthread_mutex_lock(&hash_table_mutex);
     if (hashtable_search(udp->users_table, username) == NULL) {
-
         t_client *new_user = hashtable_add(new_cliaddr, username, machine_id);
         if (!new_user) {
-
+            printf("4");
             pthread_mutex_unlock(&hash_table_mutex);
             return (1) ;
         }

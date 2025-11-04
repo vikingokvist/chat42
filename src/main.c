@@ -1,9 +1,9 @@
 #include "../inc/chat42.h"
 
 pthread_mutex_t hash_table_mutex = PTHREAD_MUTEX_INITIALIZER;
-t_client        *users_table[TABLE_MAX_SIZE];
 t_udp           udp;
 t_tcp           tcp;
+t_client **users_table = NULL;
 volatile sig_atomic_t shutdown_requested = 0;
 void signal_handler(int signo) {(void)signo;shutdown_requested = 1;}
 
@@ -17,11 +17,13 @@ int main(int argc, char **argv) {
 
     signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
+
+	users_table = calloc(TABLE_MAX_SIZE, sizeof(t_client *));
     hashtable_init(users_table);
 
-    if (udp_struct_init(&udp))
+    if (udp_struct_init(&udp, users_table))
         return (cleanup_and_exit(), 1);
-    if (tcp_struct_init(&tcp))
+    if (tcp_struct_init(&tcp, users_table))
         return (cleanup_and_exit(1), 1);
     
     char line[BUF_SIZE];

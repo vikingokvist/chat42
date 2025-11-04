@@ -1,6 +1,6 @@
 #include "../inc/chat42.h"
 
-int tcp_struct_init(t_tcp  *tcp) {
+int tcp_struct_init(t_tcp  *tcp, t_client **users_table) {
 
     tcp->OWN_USERNAME = get_user_name();
     tcp->OWN_USER_MACHINE_ID = get_user_info(0);

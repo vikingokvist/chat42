@@ -1,13 +1,13 @@
 #include "../inc/chat42.h"
 
-void    hashtable_init(t_client *users_table[TABLE_MAX_SIZE]) {
+void    hashtable_init(t_client **users_table) {
 
     for (int i = 0; i < TABLE_MAX_SIZE; i++) {
         users_table[i] = NULL;
     }
 }
 
-void print_client(t_client *users_table[TABLE_MAX_SIZE]) {
+void print_client(t_client **users_table) {
 
     for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 
@@ -32,7 +32,7 @@ ssize_t hashtable_hash(char *username) {
 }
 
 
-int hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user) {
+int hashtable_insert(t_client **users_table, t_client *new_user) {
 
     int index = hashtable_hash(new_user->USERNAME);
     if (users_table[index] != NULL) {
@@ -43,24 +43,25 @@ int hashtable_insert(t_client *users_table[TABLE_MAX_SIZE], t_client *new_user) 
     return (0);
 }
 
-t_client *hashtable_search(t_client *users_table[TABLE_MAX_SIZE], char *username) {
+t_client *hashtable_search(t_client **users_table, char *username) {
 
     if (!username)
         return (NULL);
     int index = hashtable_hash(username);
-    if (users_table[index] != NULL && strncmp(users_table[index]->USERNAME, username, BUF_SIZE) == 0) {
-
+    if (users_table[index] != NULL && !strcmp(username, users_table[index]->USERNAME)) {
+        
         return (users_table[index]);
     }
+    printf("new username[%d] connected = %s\n",index ,username);
     return (NULL);
 }
 
-void    hashtable_delete(t_client *users_table[TABLE_MAX_SIZE], char *username) {
+void    hashtable_delete(t_client **users_table,  char *username) {
 
     if (!username)
         return ;
     int index = hashtable_hash(username);
-    if (users_table[index] != NULL && strncmp(users_table[index]->USERNAME, username, BUF_SIZE) == 0) {
+    if (users_table[index] != NULL && strcmp(users_table[index]->USERNAME, username) == 0) {
 
         free(users_table[index]);
         users_table[index] = NULL;
