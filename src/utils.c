@@ -100,18 +100,17 @@ char *get_user_info(int mode)
         strncpy(session_id, host, sizeof(session_id) - 1);
         session_id[sizeof(session_id) - 1] = '\0';
     }
-    len = (mode ? 2 : 0) + strlen(session_id) + 2 + strlen(user) + 1;
+    len = (mode ? 2 : 0) + strlen(session_id) + 1 + strlen(user) + 1;
 
     result = malloc(len);
     if (!result)
         return (NULL);
 
     if (mode)
-		snprintf(result, len, "1;%s::%s", session_id, user);
+		snprintf(result, len, "1;%s;%s", session_id, user);
     else
-		snprintf(result, len, "%s::%s", session_id, user);
+		snprintf(result, len, "%s;%s", session_id, user);
 
-	printf("Connected as: %s\n", result);
     return result;
 }
 

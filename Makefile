@@ -13,14 +13,12 @@ OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
 DEPS = $(OBJS:.o=.d)
 
 
-OWN_IP := $(shell ip -4 addr show enp4s0f0 | awk '/inet / {print $$2}' | cut -d/ -f1)
 SEND_IP := $(shell ip -4 addr show enp4s0f0 | awk '/inet / {for (i=1;i<=NF;i++) if ($$i=="brd") print $$(i+1)}')
 
 
-CFLAGS += -DOWN_IP=\"$(OWN_IP)\" -DSEND_IP=\"$(SEND_IP)\"
+CFLAGS += -DSEND_IP=\"$(SEND_IP)\"
 
 all: $(NAME)
-	@echo "Using OWN_IP: $(OWN_IP)"
 	@echo "Using SEND_IP: $(SEND_IP)"
 
 $(OBJDIR)/%.o: %.c

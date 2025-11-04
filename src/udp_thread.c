@@ -43,7 +43,7 @@ int udp_struct_init(t_udp  *udp) {
         perror("udp thread");
         return (1);
     }
-    
+    printf("Connected on: %s\n", udp->OWN_USER_MACHINE_ID);
     return (0);
 }
 
