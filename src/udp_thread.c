@@ -83,7 +83,7 @@ void    *udp_receive(void* arg) {
         if (sscanf(clients_buffer, UDP_REGEX, &status, machine_id, username, colour_a, colour_b) == 5) {
 
             pthread_mutex_lock(&hash_table_mutex);
-            udp_handle_user(status, udp, &new_cliaddr, machine_id, username, colour_a, colour_b);
+            udp_handle_user(status, udp, &new_cliaddr, username, machine_id, colour_a, colour_b);
             pthread_mutex_unlock(&hash_table_mutex);
         }
     }
@@ -111,7 +111,7 @@ void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr,
             }
             printf("%s%s%s::%s%s%s %sis now online.%s\n", 
             get_color(colour_a), new->MACHINE_ID, RESET, 
-            get_color(colour_b), new->USERNAME, RESET, GREEN, RESET);
+            get_color(colour_b), new->USERNAME, RESET, BOLD_WHITE, RESET);
 
             char ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &new->CLIENT_ADDR.sin_addr, ip, sizeof(ip));

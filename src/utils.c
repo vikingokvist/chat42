@@ -151,9 +151,9 @@ char *build_colour_string(const char *machine_id, const char *username)
 		return (NULL);
 
 
-	len = strlen("BLUE") + strlen(machine_id) + strlen("RESET") +
+	len = strlen(BOLD_BLUE) + strlen(machine_id) + strlen(RESET) +
 	      2 + 
-	      strlen("RED") + strlen(username) + strlen("RESET") +
+	      strlen(BOLD_YELLOW) + strlen(username) + strlen(RESET) +
 	      1 + 
 	      2; 
 
@@ -161,7 +161,7 @@ char *build_colour_string(const char *machine_id, const char *username)
 	if (!result)
 		return (NULL);
 
-	snprintf(result, len, "BLUE%sRESET::RED%sRESET: ", machine_id, username);
+	snprintf(result, len, "%s%s%s::%s%s%s: ", BOLD_BLUE, machine_id, RESET, BOLD_YELLOW, username, RESET);
 	return (result);
 }
 
