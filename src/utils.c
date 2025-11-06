@@ -27,7 +27,7 @@ BG_CYAN "BG_CYAN" RESET " "
 BG_WHITE "BG_WHITE" RESET " \n";
 
 
-const char *get_color_code(const char *name) {
+const char *get_color(const char *name) {
 	if (!name) return WHITE;
 	if (strncmp(name, "BLACK", 6) == 0) return BLACK;
 	if (strncmp(name, "RED", 4) == 0) return RED;
@@ -141,50 +141,24 @@ char *get_user_name(void)
 	return (result);
 }
 
-
-void cleanup_and_exit()
+char *strjoin(const char *s1, const char *s2)
 {
-	usleep(100000);
-	pthread_mutex_unlock(&hash_table_mutex);
-	pthread_mutex_lock(&hash_table_mutex);
-	t_manager *man = manager;
-	t_udp *UDP = man->udp;
-	t_tcp *TCP = man->tcp;
-    memcpy(UDP->OWN_USER_MACHINE_ID, "0;", 2);
+	size_t len1, len2;
+	char *res;
 
-	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
+	if (!s1 || !s2)
+		return (NULL);
 
-		t_client *cur = UDP->users_table[i];
-		while (cur) {
-            sendto(UDP->sockfd, 
-				UDP->OWN_USER_MACHINE_ID, 
-				UDP->OWN_USER_MACHINE_LEN, 
-				0, 
-                (struct sockaddr*)&cur->CLIENT_ADDR, 
-				sizeof(cur->CLIENT_ADDR));
-			cur = cur->next;
-		}
-	}
-	hashtable_clear(UDP->users_table);
-	pthread_mutex_unlock(&hash_table_mutex);
+	len1 = strlen(s1);
+	len2 = strlen(s2);
 
-	pthread_cancel(UDP->receive_thread);
-    pthread_cancel(UDP->send_thread);
-    pthread_cancel(TCP->send_thread);
-	pthread_join(UDP->receive_thread, NULL);
-    pthread_join(UDP->send_thread, NULL);
-    pthread_join(TCP->send_thread, NULL);
-	
-	if (UDP->sockfd)
-		close(UDP->sockfd);
-	if (TCP->sockfd)
-		close(TCP->sockfd);
-	free(UDP->OWN_USERNAME);
-	free(UDP->OWN_USER_MACHINE_ID);
-	free(TCP->OWN_USERNAME);
-	free(TCP->OWN_USER_MACHINE_ID);
+	res = malloc(len1 + len2 + 1);
+	if (!res)
+		return (NULL);
 
-	printf("\nServer shutdown cleanly.\n");
-	exit(0);
+	memcpy(res, s1, len1);
+	memcpy(res + len1, s2, len2);
+	res[len1 + len2] = '\0';
+	return (res);
 }
 

@@ -37,9 +37,9 @@ int main(int argc, char **argv) {
 
 	if (init_manager())
 		return (free(manager), 1);
-	
-
 	users_table = manager->users_table;
+
+
     if (udp_struct_init(manager->udp, manager->users_table))
 		return (cleanup_and_exit(), 1);
     if (tcp_struct_init(manager->tcp, manager->users_table))
@@ -48,18 +48,19 @@ int main(int argc, char **argv) {
 
 	char line[BUF_SIZE]; 
 	while (!shutdown_requested) { 
+
 		fgets(line, BUF_SIZE, stdin); 
 		size_t line_len = strcspn(line, "\n"); 
 		line[line_len] = 0; 
 		if (strncmp(line, "chat42 --disconnect", 19) == 0)
 			break ; 
-		handle_commands(line, manager); 
+		handle_commands(line); 
 	}
     cleanup_and_exit();
     return (0);
 }
 
-void handle_commands(const char *input, t_manager *man) {
+void handle_commands(const char *input) {
 
 	char cmd[32], arg[128], msg[BUF_SIZE]; 
 	int offset = 0; 
@@ -73,31 +74,28 @@ void handle_commands(const char *input, t_manager *man) {
 	while (*input == ' ') 
 		input++;
 	if (strcmp(arg, "--disconnect") == 0) { 
-		memcpy(man->udp->OWN_USER_MACHINE_ID, "0;", 2); 
 		cleanup_and_exit(); 
 		return ; 
 	} 
-	else { 
-		if (*input == '\0') { 
-			printf("usage: chat42 <username> \"message\"\n"); 
-			fflush(stdout); 
-			return ; 
-		} 
-		strncpy(msg, input, BUF_SIZE - 1); 
-		msg[BUF_SIZE - 1] = '\0'; 
-		pthread_mutex_lock(&hash_table_mutex); 
-		t_client *client = hashtable_search(users_table, arg); 
-		if (!client) { 
-			printf("User '%s' not found\n", arg); 
-			fflush(stdout); 
-			pthread_mutex_unlock(&hash_table_mutex); 
-			return ; 
-		} 
-		//printf("\"%s\" - sent to %s::%s\n", msg, client->MACHINE_ID, client->USERNAME); 
+	if (*input == '\0') { 
+		printf("usage: chat42 <username> \"message\"\n"); 
 		fflush(stdout); 
-		send_tcp_message(client, msg); 
-		pthread_mutex_unlock(&hash_table_mutex);
+		return ; 
 	} 
+	strncpy(msg, input, BUF_SIZE - 1); 
+	msg[BUF_SIZE - 1] = '\0'; 
+	pthread_mutex_lock(&hash_table_mutex); 
+	t_client *client = hashtable_search(users_table, arg); 
+	if (!client) { 
+		printf("User '%s' not found\n", arg); 
+		fflush(stdout);
+		pthread_mutex_unlock(&hash_table_mutex); 
+		return ; 
+	} 
+	//printf("\"%s\" - sent to %s::%s\n", msg, client->MACHINE_ID, client->USERNAME); 
+	fflush(stdout); 
+	send_tcp_message(client, msg); 
+	pthread_mutex_unlock(&hash_table_mutex);
 }
 
 

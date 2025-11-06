@@ -49,6 +49,7 @@ ssize_t hashtable_hash(char *username) {
         hash_value *= 33;
         hash_value = (hash_value + username[i]) % TABLE_MAX_SIZE;
     }
+    printf("hash_value = %zu", hash_value);
     return (hash_value);
 }
 
@@ -84,11 +85,11 @@ t_client *hashtable_search(t_client **users_table, char *username) {
             return (cur);
         cur = cur->next;
     }
-    // printf("new username[%d] connected = %s\n", index , username);
+
     return (NULL);
 }
 
-void    hashtable_delete(t_client **users_table,  char *username) {
+void    hashtable_delete(t_client **users_table,  char *username, char *machine_id) {
 
     if (!username)
         return ;
@@ -98,7 +99,7 @@ void    hashtable_delete(t_client **users_table,  char *username) {
 
     while (cur) {
 
-        if (strcmp(cur->USERNAME, username) == 0) {
+        if (!strcmp(cur->USERNAME, username) && !strcmp(cur->MACHINE_ID, machine_id)) {
             if (prev == NULL)
                 users_table[index] = cur->next;
             else
@@ -108,7 +109,6 @@ void    hashtable_delete(t_client **users_table,  char *username) {
         prev = cur;
         cur = cur->next;
     }
-
 }
 
 t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id)
@@ -119,8 +119,6 @@ t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *m
     if (!new_user)
         return (NULL);
     new_user->next = NULL;
-
-
     new_user->CLIENT_ADDR.sin_family = AF_INET;
     new_user->CLIENT_ADDR.sin_addr.s_addr = new_cliaddr->sin_addr.s_addr;
     new_user->CLIENT_ADDR.sin_port = htons(TCP_PORT);
@@ -129,13 +127,6 @@ t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *m
     new_user->USERNAME[63] = '\0';
     strncpy(new_user->MACHINE_ID, machine_id, 63);
     new_user->MACHINE_ID[63] = '\0';
-    
-
-
-    char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &new_user->CLIENT_ADDR.sin_addr, ip, sizeof(ip));
-    printf("Saved client %s (%s:%d)\n", new_user->USERNAME, ip, ntohs(new_user->CLIENT_ADDR.sin_port));
-
 
     return (new_user);
 }
