@@ -20,8 +20,8 @@ int	init_manager(void) {
 	manager->tcp = calloc(1, sizeof(t_tcp));
 	if (!manager->tcp)
 		return (free(manager->udp), free(manager->users_table), 1);
-	manager->colour_a = BLUE;
-	manager->colour_b = RED;
+	manager->colour_a = BOLD_BLUE;
+	manager->colour_b = BOLD_YELLOW;
 	manager->OWN_USERNAME = get_user_name();
 	manager->OWN_MACHINE_ID = get_machine_id();
 	return (0);
