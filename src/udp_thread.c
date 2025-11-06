@@ -102,7 +102,7 @@ int    udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_i
             pthread_mutex_unlock(&hash_table_mutex);
             return (1);
         }
-        print_client(udp->users_table);
+        // print_client(udp->users_table);
         pthread_mutex_unlock(&hash_table_mutex);
         return (0);
     }
