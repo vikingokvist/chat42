@@ -84,7 +84,7 @@ t_client *hashtable_search(t_client **users_table, char *username) {
             return (cur);
         cur = cur->next;
     }
-    printf("new username[%d] connected = %s\n", index , username);
+    // printf("new username[%d] connected = %s\n", index , username);
     return (NULL);
 }
 
