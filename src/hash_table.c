@@ -44,7 +44,6 @@ ssize_t hashtable_hash(char *username) {
     if (!username)
         return (-1);
     size_t hash_value = 5381;
-    size_t len = strlen(username);
     for (size_t i = 0; username[i]; i++) {
 
         hash_value *= 33;

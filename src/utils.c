@@ -149,7 +149,7 @@ void cleanup_and_exit()
 	pthread_mutex_lock(&hash_table_mutex);
 	t_manager *man = manager;
 	t_udp *UDP = man->udp;
-	t_udp *TCP = man->tcp;
+	t_tcp *TCP = man->tcp;
     memcpy(UDP->OWN_USER_MACHINE_ID, "0;", 2);
 
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
@@ -168,10 +168,13 @@ void cleanup_and_exit()
 	hashtable_clear(UDP->users_table);
 	pthread_mutex_unlock(&hash_table_mutex);
 
+	pthread_cancel(UDP->receive_thread);
+    pthread_cancel(UDP->send_thread);
+    pthread_cancel(TCP->send_thread);
 	pthread_join(UDP->receive_thread, NULL);
     pthread_join(UDP->send_thread, NULL);
     pthread_join(TCP->send_thread, NULL);
-
+	
 	if (UDP->sockfd)
 		close(UDP->sockfd);
 	if (TCP->sockfd)

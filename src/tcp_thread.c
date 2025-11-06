@@ -59,14 +59,19 @@ void* tcp_thread_func(void* arg) {
         if (newsockfd < 0) continue;
 
         int n = read(newsockfd, buffer, BUF_SIZE-1);
-        if (n <= 0) { close(newsockfd); continue; }
-
+        if (n <= 0) {
+            close(newsockfd);
+            continue;
+        }
         buffer[n] = '\0';
-        printf("\n[MSG] %s\n> ", buffer);
-        fflush(stdout);
+        if (n > 0) {
+            
+            printf("\n[MSG] %s\n> ", buffer);
+            fflush(stdout);
+            write(newsockfd, "OK", 2);
+            close(newsockfd);
+        }
 
-        write(newsockfd, "OK", 2);
-        close(newsockfd);
     }
 }
 

@@ -72,7 +72,7 @@ typedef struct s_client {
     struct sockaddr_in  CLIENT_ADDR;
     char                USERNAME[64];
     char                MACHINE_ID[64];
-    struct t_client     *next;
+    struct s_client     *next;
 }   t_client;
 
 extern t_client **users_table;
@@ -117,7 +117,6 @@ typedef struct s_manager
 }             t_manager;
 
 extern t_manager *manager;
-extern volatile sig_atomic_t shutdown_requested;
 
 void            hashtable_clear(t_client **users_table);
 t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
@@ -142,8 +141,8 @@ void            *udp_receive(void* arg);
 int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username);
 void            udp_delete_user(t_udp *udp,  char *username);
 
-void            handle_commands(void);
-void            process_chat42_command(const char *arg, const char *rest);
+// void            handle_commands(void);
+void handle_commands(const char *input, t_manager *man);
 void            cleanup_and_exit();
 
 #endif
