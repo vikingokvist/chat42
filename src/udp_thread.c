@@ -35,11 +35,7 @@ int udp_struct_init(t_udp  *udp, t_client **users_table) {
 
         return (perror("inet_pton for send_addr failed"), 1);
     }
-    t_client *new_user = hashtable_add(&udp->receive_addr, udp->OWN_USERNAME, udp->OWN_USER_MACHINE_ID);
-    if (!new_user) {
-        return (1) ;
-    }
-    hashtable_insert(udp->users_table, new_user);
+
 
 
     if (pthread_create(&udp->send_thread, NULL, udp_send, (void*)udp) == -1) {
