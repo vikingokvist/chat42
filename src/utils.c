@@ -147,37 +147,39 @@ void cleanup_and_exit()
 	usleep(100000);
 	pthread_mutex_unlock(&hash_table_mutex);
 	pthread_mutex_lock(&hash_table_mutex);
-    memcpy(udp.OWN_USER_MACHINE_ID, "0;", 2);
+	t_manager *man = manager;
+	t_udp *UDP = man->udp;
+	t_udp *TCP = man->tcp;
+    memcpy(UDP->OWN_USER_MACHINE_ID, "0;", 2);
+
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 
-		if (udp.users_table[i]) {
-            sendto(udp.sockfd, udp.OWN_USER_MACHINE_ID, udp.OWN_USER_MACHINE_LEN, 0, 
-                (struct sockaddr*)&udp.users_table[i]->CLIENT_ADDR, sizeof(udp.users_table[i]->CLIENT_ADDR));
-			free(udp.users_table[i]);
-			udp.users_table[i] = NULL;
+		t_client *cur = UDP->users_table[i];
+		while (cur) {
+            sendto(UDP->sockfd, 
+				UDP->OWN_USER_MACHINE_ID, 
+				UDP->OWN_USER_MACHINE_LEN, 
+				0, 
+                (struct sockaddr*)&cur->CLIENT_ADDR, 
+				sizeof(cur->CLIENT_ADDR));
+			cur = cur->next;
 		}
 	}
+	hashtable_clear(UDP->users_table);
 	pthread_mutex_unlock(&hash_table_mutex);
 
-	if (udp.sockfd)
-		close(udp.sockfd);
-	if (tcp.sockfd)
-		close(tcp.sockfd);
-	if (udp.OWN_USERNAME)
-		free(udp.OWN_USERNAME);
-	if (udp.OWN_USER_MACHINE_ID)
-		free(udp.OWN_USER_MACHINE_ID);
-	if (tcp.OWN_USERNAME)
-		free(tcp.OWN_USERNAME);
-	if (tcp.OWN_USER_MACHINE_ID)
-		free(tcp.OWN_USER_MACHINE_ID);
+	pthread_join(UDP->receive_thread, NULL);
+    pthread_join(UDP->send_thread, NULL);
+    pthread_join(TCP->send_thread, NULL);
 
-	pthread_cancel(udp.send_thread);
-    pthread_cancel(tcp.send_thread);
-	pthread_cancel(tcp.receive_thread);
-	pthread_join(udp.receive_thread, NULL);
-    pthread_join(udp.send_thread, NULL);
-    pthread_join(tcp.send_thread, NULL);
+	if (UDP->sockfd)
+		close(UDP->sockfd);
+	if (TCP->sockfd)
+		close(TCP->sockfd);
+	free(UDP->OWN_USERNAME);
+	free(UDP->OWN_USER_MACHINE_ID);
+	free(TCP->OWN_USERNAME);
+	free(TCP->OWN_USER_MACHINE_ID);
 
 	printf("\nServer shutdown cleanly.\n");
 	exit(0);

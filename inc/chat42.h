@@ -66,14 +66,17 @@ These are common chat42 commands used in various situations:\n\n\
 #define BUF_SIZE 1024
 #define TABLE_MAX_SIZE 6
 
+
 typedef struct s_client {
 
     struct sockaddr_in  CLIENT_ADDR;
     char                USERNAME[64];
     char                MACHINE_ID[64];
+    struct t_client     *next;
 }   t_client;
 
 extern t_client **users_table;
+
 typedef struct s_tcp {
 
   char                *OWN_USERNAME;
@@ -105,12 +108,21 @@ typedef struct s_udp {
 } t_udp;
 
 extern pthread_mutex_t  hash_table_mutex;
-extern t_tcp            tcp;
-extern t_udp            udp; 
 
+typedef struct s_manager
+{
+    t_udp           *udp;
+    t_tcp           *tcp;
+    t_client **users_table;
+}             t_manager;
+
+extern t_manager *manager;
+extern volatile sig_atomic_t shutdown_requested;
+
+void            hashtable_clear(t_client **users_table);
 t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
 void            hashtable_delete(t_client **users_table, char *username) ;
-t_client *hashtable_search(t_client **users_table, char *username) ;
+t_client      *hashtable_search(t_client **users_table, char *username) ;
 int             hashtable_insert(t_client **users_table, t_client *new_user);
 ssize_t         hashtable_hash(char *username);
 void            print_client(t_client **users_table);
@@ -130,7 +142,8 @@ void            *udp_receive(void* arg);
 int              udp_add_user(t_udp *udp, struct sockaddr_in *new_cliaddr, char *machine_id, char *username);
 void            udp_delete_user(t_udp *udp,  char *username);
 
-void            handle_commands(const char *input);
+void            handle_commands(void);
+void            process_chat42_command(const char *arg, const char *rest);
 void            cleanup_and_exit();
 
 #endif
