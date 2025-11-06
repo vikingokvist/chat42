@@ -9,14 +9,14 @@ void cleanup_and_exit() {
 
 	t_udp *UDP = manager->udp;
 	t_tcp *TCP = manager->tcp;
-	size_t user_len = strlen(UDP->OWN_USER_MACHINE_ID);
-    memcpy(UDP->OWN_USER_MACHINE_ID, "0;", 2);
+	size_t user_len = strlen(UDP->OWN_USER_ID);
+    memcpy(UDP->OWN_USER_ID, "0;", 2);
 
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 		t_client *cur = UDP->users_table[i];
 		while (cur) {
 			
-            sendto(UDP->sockfd, UDP->OWN_USER_MACHINE_ID, user_len, 0, 
+            sendto(UDP->sockfd, UDP->OWN_USER_ID, user_len, 0, 
                 (struct sockaddr*)&cur->CLIENT_ADDR, sizeof(cur->CLIENT_ADDR));
 			cur = cur->next;
 		}
@@ -35,10 +35,13 @@ void cleanup_and_exit() {
 		close(UDP->sockfd);
 	if (TCP->sockfd)
 		close(TCP->sockfd);
-	free(UDP->OWN_USERNAME);
-	free(UDP->OWN_USER_MACHINE_ID);
-	free(TCP->OWN_USERNAME);
-	free(TCP->OWN_USER_MACHINE_ID);
+	free(UDP->OWN_USER_ID);
+	free(TCP->OWN_USER_ID);
+	free(manager->OWN_MACHINE_ID);
+	free(manager->OWN_USERNAME);
+	free(manager->tcp);
+	free(manager->udp);
+	free(manager);
 
 	printf("\nServer shutdown cleanly.\n");
 	exit(0);

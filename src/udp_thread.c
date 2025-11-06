@@ -1,11 +1,12 @@
 #include "../inc/chat42.h"
 
 
-int udp_struct_init(t_udp  *udp, t_client **users_table) {
+int udp_struct_init(void *manager) {
 
-    udp->OWN_USERNAME = get_user_name();
-    udp->OWN_USER_MACHINE_ID = get_user_info(1);
-    udp->users_table = users_table;
+    t_manager *man = (t_manager*)manager;
+    t_udp *udp = man->udp;
+    udp->OWN_USER_ID = build_user_info(man->OWN_MACHINE_ID, man->OWN_USERNAME);
+    udp->users_table = man->users_table;
     if ((udp->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         return (perror("udp socket"), 1);
     }
@@ -40,18 +41,17 @@ int udp_struct_init(t_udp  *udp, t_client **users_table) {
         return (perror("udp send thread"), 1);
     }
 
-    printf("Connected on: %s\n", udp->OWN_USER_MACHINE_ID);
     return (0);
 }
 
 void    *udp_send(void* arg) {
 
     t_udp    *udp = (t_udp *)arg;
-    size_t    user_len = strlen(udp->OWN_USER_MACHINE_ID);
+    size_t    user_len = strlen(udp->OWN_USER_ID);
 
     while (1) {
 
-        sendto(udp->sockfd, udp->OWN_USER_MACHINE_ID, user_len, 
+        sendto(udp->sockfd, udp->OWN_USER_ID, user_len, 
                 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
         sleep(3);
     }
@@ -73,7 +73,7 @@ void    *udp_receive(void* arg) {
 
         char sender_ip[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &new_cliaddr.sin_addr, sender_ip, sizeof(sender_ip));
-        if (!strcmp(sender_ip, inet_ntoa(udp->send_addr.sin_addr)))
+        if (!strcmp(sender_ip, inet_ntoa(udp->send_addr.sin_addr)) && new_cliaddr.sin_port == udp->receive_addr.sin_port)
             continue;
 
         clients_buffer[n] = '\0';  

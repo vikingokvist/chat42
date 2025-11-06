@@ -20,6 +20,10 @@ int	init_manager(void) {
 	manager->tcp = calloc(1, sizeof(t_tcp));
 	if (!manager->tcp)
 		return (free(manager->udp), free(manager->users_table), 1);
+	manager->colour_a = BLUE;
+	manager->colour_b = RED;
+	manager->OWN_USERNAME = get_user_name();
+	manager->OWN_MACHINE_ID = get_machine_id();
 	return (0);
 }
 
@@ -40,9 +44,9 @@ int main(int argc, char **argv) {
 	users_table = manager->users_table;
 
 
-    if (udp_struct_init(manager->udp, manager->users_table))
+    if (udp_struct_init(manager))
 		return (cleanup_and_exit(), 1);
-    if (tcp_struct_init(manager->tcp, manager->users_table))
+    if (tcp_struct_init(manager))
 		return (cleanup_and_exit(), 1);
 
 
@@ -54,13 +58,13 @@ int main(int argc, char **argv) {
 		line[line_len] = 0; 
 		if (strncmp(line, "chat42 --disconnect", 19) == 0)
 			break ; 
-		handle_commands(line); 
+		handle_commands(line, manager->tcp); 
 	}
     cleanup_and_exit();
     return (0);
 }
 
-void handle_commands(const char *input) {
+void handle_commands(const char *input, t_tcp *tcp) {
 
 	char cmd[32], arg[128], msg[BUF_SIZE]; 
 	int offset = 0; 
@@ -94,7 +98,7 @@ void handle_commands(const char *input) {
 	} 
 	//printf("\"%s\" - sent to %s::%s\n", msg, client->MACHINE_ID, client->USERNAME); 
 	fflush(stdout); 
-	send_tcp_message(client, msg); 
+	send_tcp_message(client, msg, tcp->OWN_USER_ID); 
 	pthread_mutex_unlock(&hash_table_mutex);
 }
 

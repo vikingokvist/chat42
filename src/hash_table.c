@@ -20,6 +20,7 @@ void    hashtable_clear(t_client **users_table)
 		}
 		users_table[i] = NULL;
 	}
+    free(users_table);
 }
 
 
@@ -49,7 +50,7 @@ ssize_t hashtable_hash(char *username) {
         hash_value *= 33;
         hash_value = (hash_value + username[i]) % TABLE_MAX_SIZE;
     }
-    printf("hash_value = %zu", hash_value);
+    // printf("hash_value = %zu", hash_value);
     return (hash_value);
 }
 

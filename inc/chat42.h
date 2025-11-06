@@ -50,8 +50,7 @@ void            hashtable_init(t_client **users_table);
 //-------------------------------------------------------------------------------------------------------TCP THREAD
 typedef struct s_tcp {
 
-  char                *OWN_USERNAME;
-  char                *OWN_USER_MACHINE_ID;
+  char                *OWN_USER_ID;
   int                 sockfd;
   struct sockaddr_in  receive_addr;
   struct sockaddr_in  send_addr;
@@ -62,9 +61,9 @@ typedef struct s_tcp {
 
 } t_tcp;
 
-int              tcp_struct_init(t_tcp  *tcp_struct, t_client **users_table);
+int              tcp_struct_init(void *manager);
 void            *tcp_thread_func(void* tcp_struct);
-void             send_tcp_message(t_client *client, const char *msg);
+void            send_tcp_message(t_client *client, const char *msg, char *OWN_USER_ID);
 //-------------------------------------------------------------------------------------------------------TCP THREAD
 
 extern pthread_mutex_t  hash_table_mutex;
@@ -72,8 +71,7 @@ extern pthread_mutex_t  hash_table_mutex;
 //-------------------------------------------------------------------------------------------------------UDP THREAD
 typedef struct s_udp {
 
-  char                *OWN_USERNAME;
-  char                *OWN_USER_MACHINE_ID;
+  char                *OWN_USER_ID;
   int                 sockfd;
   int                 opt;
   struct sockaddr_in  receive_addr;
@@ -84,10 +82,11 @@ typedef struct s_udp {
 
 } t_udp;
 
-int             udp_struct_init(t_udp  *udp, t_client **users_table);
+int             udp_struct_init(void *manager);
 void            *udp_send(void* arg);
 void            *udp_receive(void* arg);
-void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr, char *username, char *machine_id, char *color_a, char *color_b);
+void            udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr, 
+                                char *username, char *machine_id, char *color_a, char *color_b);
 //-------------------------------------------------------------------------------------------------------UDP THREAD
 
 
@@ -99,6 +98,8 @@ typedef struct s_manager
     t_udp           *udp;
     t_tcp           *tcp;
     t_client        **users_table;
+    char            *OWN_USERNAME;
+    char            *OWN_MACHINE_ID;
     char            *colour_a;
     char            *colour_b;
 }             t_manager;
@@ -112,10 +113,12 @@ void            cleanup_and_exit();
 
 //-------------------------------------------------------------------------------------------------------UTILS
 char            *get_user_name(void);
-char            *get_user_info(int mode);
+char            *get_machine_id(void);
+char            *build_user_info(const char *machine_id, const char *user_id);
 const char      *get_color(const char *name);
-void            handle_commands(const char *input);
+void            handle_commands(const char *input, t_tcp *tcp);
 char            *strjoin(const char *s1, const char *s2);
+char            *build_colour_string(const char *machine_id, const char *username);
 //-------------------------------------------------------------------------------------------------------UTILS
 
 

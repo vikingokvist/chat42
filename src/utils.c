@@ -50,68 +50,48 @@ const char *get_color(const char *name) {
 	return WHITE;
 }
 
-char *get_user_info(int mode)
+char *get_machine_id(void)
 {
-    char host[BUF_SIZE];
-    char *user;
-    char *result;
-    size_t len;
+	char host[BUF_SIZE];
+	char session_id[BUF_SIZE];
+	char *session = getenv("SESSION_MANAGER");
+	char *result;
+
+	session_id[0] = '\0';
+
+	if (session) {
+		char *p = strchr(session, '/');
+		if (p) {
+			p++;
+			char *end = strchr(p, '.');
+			if (!end)
+				end = strchr(p, ':');
+			if (!end)
+				end = strchr(p, '/');
+			if (end && end > p) {
+				size_t token_len = (size_t)(end - p);
+				if (token_len >= sizeof(session_id))
+					token_len = sizeof(session_id) - 1;
+				memcpy(session_id, p, token_len);
+				session_id[token_len] = '\0';
+			} else {
+				strncpy(session_id, p, sizeof(session_id) - 1);
+				session_id[sizeof(session_id) - 1] = '\0';
+			}
+		}
+	}
 
 
-    user = getenv("USER");
-    if (!user)
-        user = getenv("LOGNAME");
-    if (!user)
-        user = "unknown";
+	if (session_id[0] == '\0') {
+		if (gethostname(host, sizeof(host) - 1) != 0)
+			return (NULL);
+		host[sizeof(host) - 1] = '\0';
+		strncpy(session_id, host, sizeof(session_id) - 1);
+		session_id[sizeof(session_id) - 1] = '\0';
+	}
 
-
-    char *session = getenv("SESSION_MANAGER");
-    char session_id[BUF_SIZE];
-    session_id[0] = '\0';
-
-    if (session) {
-
-        char *p = strchr(session, '/');
-        if (p) {
-            p++;
-            char *end = strchr(p, '.');
-            if (!end)
-                end = strchr(p, ':');
-            if (!end)
-                end = strchr(p, '/');
-            if (end && end > p) {
-                size_t token_len = (size_t)(end - p);
-                if (token_len >= sizeof(session_id))
-                    token_len = sizeof(session_id) - 1;
-                memcpy(session_id, p, token_len);
-                session_id[token_len] = '\0';
-            } else {
-   
-                strncpy(session_id, p, sizeof(session_id) - 1);
-                session_id[sizeof(session_id) - 1] = '\0';
-            }
-        }
-    }
-
-    if (session_id[0] == '\0') {
-        if (gethostname(host, sizeof(host) - 1) != 0)
-            return (NULL);
-        host[sizeof(host) - 1] = '\0';
-        strncpy(session_id, host, sizeof(session_id) - 1);
-        session_id[sizeof(session_id) - 1] = '\0';
-    }
-    len = (mode ? 2 : 0) + strlen(session_id) + 1 + strlen(user) + 1;
-
-    result = malloc(len);
-    if (!result)
-        return (NULL);
-
-    if (mode)
-		snprintf(result, len, "1;%s;%s", session_id, user);
-    else
-		snprintf(result, len, "%s;%s", session_id, user);
-
-    return result;
+	result = strdup(session_id);
+	return (result);
 }
 
 
@@ -138,6 +118,50 @@ char *get_user_name(void)
 		*space_user++ = user[i];
 	}
 	*space_user = '\0';
+	return (result);
+}
+
+
+char *build_user_info(const char *machine_id, const char *user_id)
+{
+	char *result;
+	size_t len;
+
+	if (!machine_id || !user_id)
+		return (NULL);
+
+	len = 2 + strlen(machine_id) + 1 + strlen(user_id) + 1 +
+		strlen("BLUE") + 1 + strlen("RED") + 2;
+
+	result = malloc(len);
+	if (!result)
+		return (NULL);
+
+	snprintf(result, len, "1;%s;%s;BLUE;RED;", machine_id, user_id);
+	return (result);
+}
+
+
+char *build_colour_string(const char *machine_id, const char *username)
+{
+	char *result;
+	size_t len;
+
+	if (!machine_id || !username)
+		return (NULL);
+
+
+	len = strlen("BLUE") + strlen(machine_id) + strlen("RESET") +
+	      2 + 
+	      strlen("RED") + strlen(username) + strlen("RESET") +
+	      1 + 
+	      2; 
+
+	result = malloc(len);
+	if (!result)
+		return (NULL);
+
+	snprintf(result, len, "BLUE%sRESET::RED%sRESET: ", machine_id, username);
 	return (result);
 }
 
