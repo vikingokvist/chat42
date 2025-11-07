@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 	char line[BUF_SIZE]; 
 	while (!shutdown_requested) { 
 
+		fflush(stdout);
 		fgets(line, BUF_SIZE, stdin); 
 		size_t line_len = strcspn(line, "\n"); 
 		line[line_len] = 0; 

@@ -94,7 +94,8 @@ void* tcp_thread_func(void* arg) {
         }
         buffer[n] = '\0'; 
         pthread_mutex_lock(&msg_mutex);
-        printf("%s\n", buffer);
+        printf("\r\33[K");               // clear current line
+        printf("%s\n", buffer);          // print incoming message
         fflush(stdout);
         pthread_mutex_unlock(&msg_mutex);
         write(newsockfd, "OK\n", 3);
