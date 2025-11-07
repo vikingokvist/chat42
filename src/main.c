@@ -3,6 +3,7 @@
 
 pthread_mutex_t			hash_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t			colour_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t			msg_mutex = PTHREAD_MUTEX_INITIALIZER;
 t_client				**users_table;
 t_manager 				*manager;
 volatile sig_atomic_t	shutdown_requested = 0;

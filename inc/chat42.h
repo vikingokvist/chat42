@@ -69,6 +69,7 @@ void            send_tcp_message(t_client *client, const char *msg, t_tcp *tcp);
 
 extern pthread_mutex_t  hash_table_mutex;
 extern pthread_mutex_t  colour_mutex;
+extern pthread_mutex_t	msg_mutex;
 
 //-------------------------------------------------------------------------------------------------------UDP THREAD
 typedef struct s_udp {
@@ -153,6 +154,7 @@ usage: chat42 [--version] [--help] [--login] [<username> + <message>]\n\
               [--colour-list] [--colour-set (+ <colour>::<colour>)]\n\
               [--block + <username>]\n\n\
 These are common chat42 commands used in various situations:\n\n\
+  --connect                      Start chat42 process.\n\
   --help                         Print help page.\n\
   --version                      State current version.\n\
   --colour-list                  List all ANSI colours.\n\
@@ -177,14 +179,6 @@ These are common chat42 commands used in various situations:\n\n\
 #define BOLD_MAGENTA "\x1b[1;35m"
 #define BOLD_CYAN    "\x1b[1;36m"
 #define BOLD_WHITE   "\x1b[1;37m"
-#define BG_BLACK     "\x1b[40m"
-#define BG_RED       "\x1b[41m"
-#define BG_GREEN     "\x1b[42m"
-#define BG_YELLOW    "\x1b[43m"
-#define BG_BLUE      "\x1b[44m"
-#define BG_MAGENTA   "\x1b[45m"
-#define BG_CYAN      "\x1b[46m"
-#define BG_WHITE     "\x1b[47m"
 //-------------------------------------------------------------------------------------------------------COMMANDS
 
 
