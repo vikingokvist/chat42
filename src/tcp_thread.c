@@ -62,9 +62,10 @@ void send_tcp_message(t_client *client, const char *msg, t_tcp *tcp)
 		close(client_sockfd);
 		return ;
 	}
-    write(client_sockfd, tcp->OWN_USER_ID, tcp->OWN_USER_ID_LEN);
-	write(client_sockfd, msg, strlen(msg));
+    char *user_msg = strjoin(tcp->OWN_USER_ID, msg);
+	write(client_sockfd, user_msg, strlen(user_msg));
 	close(client_sockfd);
+    free(user_msg);
 }
 
 void* tcp_thread_func(void* arg) {
@@ -78,7 +79,7 @@ void* tcp_thread_func(void* arg) {
 
     while (1) {
 
-        if ((newsockfd = accept(tcp->sockfd, (struct sockaddr*)&cliaddr, &clilen) )< 0)
+        if ((newsockfd = accept(tcp->sockfd, (struct sockaddr*)&cliaddr, &clilen) ) < 0)
             continue;
 
         if ((n = read(newsockfd, buffer, BUF_SIZE-1)) <= 0) {
