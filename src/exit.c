@@ -1,6 +1,25 @@
 #include "../inc/chat42.h"
 
 
+int	init_manager(void) {
+
+	manager->users_table = calloc(TABLE_MAX_SIZE, sizeof(t_client *));
+	if (!manager->users_table)
+		return (1);
+    hashtable_init(manager->users_table);
+	manager->udp = calloc(1, sizeof(t_udp));
+	if (!manager->udp)
+		return (free(manager->users_table), 1);
+	manager->tcp = calloc(1, sizeof(t_tcp));
+	if (!manager->tcp)
+		return (free(manager->udp), free(manager->users_table), 1);
+	manager->colour_a = BOLD_BLUE;
+	manager->colour_b = BOLD_YELLOW;
+	manager->OWN_USERNAME = get_user_name();
+	manager->OWN_MACHINE_ID = get_machine_id();
+	return (0);
+}
+
 void cleanup_and_exit() {
 
 

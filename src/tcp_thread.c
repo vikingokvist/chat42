@@ -7,7 +7,8 @@ int tcp_struct_init(void *manager) {
 
     t_manager *man = (t_manager*)manager;
     t_tcp  *tcp = man->tcp;
-    tcp->OWN_USER_ID = build_colour_string(man->OWN_MACHINE_ID, man->OWN_USERNAME);
+    tcp->OWN_USER_ID = build_colour_string(man->OWN_MACHINE_ID, man->OWN_USERNAME, man->colour_a, man->colour_b);
+    tcp->OWN_USER_ID_LEN = strlen(tcp->OWN_USER_ID);
     tcp->sockfd = -1;
     tcp->users_table = man->users_table;
 
@@ -48,7 +49,7 @@ int tcp_struct_init(void *manager) {
     return (0);
 }
 
-void send_tcp_message(t_client *client, const char *msg, char *OWN_USER_ID)
+void send_tcp_message(t_client *client, const char *msg, t_tcp *tcp)
 {
 	int         client_sockfd;
 
@@ -61,7 +62,7 @@ void send_tcp_message(t_client *client, const char *msg, char *OWN_USER_ID)
 		close(client_sockfd);
 		return ;
 	}
-    write(client_sockfd, OWN_USER_ID, strlen(OWN_USER_ID));
+    write(client_sockfd, tcp->OWN_USER_ID, tcp->OWN_USER_ID_LEN);
 	write(client_sockfd, msg, strlen(msg));
 	close(client_sockfd);
 }

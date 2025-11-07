@@ -51,6 +51,7 @@ void            hashtable_init(t_client **users_table);
 typedef struct s_tcp {
 
   char                *OWN_USER_ID;
+  size_t              OWN_USER_ID_LEN;
   int                 sockfd;
   struct sockaddr_in  receive_addr;
   struct sockaddr_in  send_addr;
@@ -63,15 +64,17 @@ typedef struct s_tcp {
 
 int              tcp_struct_init(void *manager);
 void            *tcp_thread_func(void* tcp_struct);
-void            send_tcp_message(t_client *client, const char *msg, char *OWN_USER_ID);
+void            send_tcp_message(t_client *client, const char *msg, t_tcp *tcp);
 //-------------------------------------------------------------------------------------------------------TCP THREAD
 
 extern pthread_mutex_t  hash_table_mutex;
+extern pthread_mutex_t  colour_mutex;
 
 //-------------------------------------------------------------------------------------------------------UDP THREAD
 typedef struct s_udp {
 
   char                *OWN_USER_ID;
+  size_t              OWN_USER_ID_LEN;
   int                 sockfd;
   int                 opt;
   struct sockaddr_in  receive_addr;
@@ -106,24 +109,45 @@ typedef struct s_manager
 
 extern t_manager *manager;
 void            cleanup_and_exit();
+int             init_manager(void);
+void            signal_handler(int signo);
 //-------------------------------------------------------------------------------------------------------MANAGER STRUCT 
 
 
 
 
 //-------------------------------------------------------------------------------------------------------UTILS
+char            *build_user_info(const char *machine_id, const char *user_id, const char *colour_a, const char *colour_b);
+char            *build_colour_string(const char *machine_id, const char *username, const char *colour_a, const char *colour_b);
 char            *get_user_name(void);
 char            *get_machine_id(void);
-char            *build_user_info(const char *machine_id, const char *user_id);
 const char      *get_color(const char *name);
-void            handle_commands(const char *input, t_tcp *tcp);
+const char       *get_color_name(const char *code);
 char            *strjoin(const char *s1, const char *s2);
-char            *build_colour_string(const char *machine_id, const char *username);
 //-------------------------------------------------------------------------------------------------------UTILS
 
 
 
-//-------------------------------------------------------------------------------------------------------HELP COMMAND
+//-------------------------------------------------------------------------------------------------------COMMANDS
+typedef void (*command_func_t)(const char *arg1, const char *arg2);
+
+struct command_entry {
+
+	const char *name;
+	command_func_t func;
+
+};
+
+
+void              handle_commands(const char *input, t_tcp *tcp);
+command_func_t    is_server_command(char *cmd);
+void              help_command(const char *arg1, const char *arg2);
+void              disconnect_command(const char *arg1, const char *arg2);
+void              version_command(const char *arg1, const char *arg2);
+void              colour_set_command(const char *arg1, const char *arg2);
+void              colour_list_command(const char *arg1, const char *arg2);
+
+#define SERVER_COMMAND_COUNT 5
 #define HELP_MSG  "\
 usage: chat42 [--version] [--help] [--login] [<username> + <message>]\n\
               [--colour-list] [--colour-set (+ <colour>::<colour>)]\n\
@@ -131,18 +155,11 @@ usage: chat42 [--version] [--help] [--login] [<username> + <message>]\n\
 These are common chat42 commands used in various situations:\n\n\
   --help                         Print help page.\n\
   --version                      State current version.\n\
-  --login                        Start looking for connected clients.\n\
-  --block <username>             Block communications from client.\n\
   --colour-list                  List all ANSI colours.\n\
   --colour-set <colour::colour>  Set profile colours.\n\
   <username> + <message>         Send message to username.\n"
 
 #define VERSION_MSG "chat42 pre-pre-alpha 0.0.1\n"
-//-------------------------------------------------------------------------------------------------------HELP COMMAND
-
-
-
-//-------------------------------------------------------------------------------------------------------COLOURS
 #define RESET       "\x1b[0m"
 #define BLACK       "\x1b[0;30m"
 #define RED         "\x1b[0;31m"
@@ -168,9 +185,7 @@ These are common chat42 commands used in various situations:\n\n\
 #define BG_MAGENTA   "\x1b[45m"
 #define BG_CYAN      "\x1b[46m"
 #define BG_WHITE     "\x1b[47m"
-//-------------------------------------------------------------------------------------------------------COLOURS
-
-
+//-------------------------------------------------------------------------------------------------------COMMANDS
 
 
 #endif

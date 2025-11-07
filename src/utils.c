@@ -1,54 +1,5 @@
 #include "../inc/chat42.h"
 
-const char *LIST_COLOURS = 
-BLACK "BLACK " RESET
-RED "RED " RESET
-GREEN "GREEN " RESET
-YELLOW "YELLOW " RESET
-BLUE "BLUE " RESET
-MAGENTA "MAGENTA " RESET
-CYAN "CYAN " RESET
-WHITE "WHITE " RESET
-BOLD_BLACK "BOLD_BLACK " RESET
-BOLD_RED "BOLD_RED \n" RESET
-BOLD_GREEN "BOLD_GREEN " RESET
-BOLD_YELLOW "BOLD_YELLOW " RESET
-BOLD_BLUE "BOLD_BLUE " RESET
-BOLD_MAGENTA "BOLD_MAGENTA " RESET
-BOLD_CYAN "BOLD_CYAN " RESET
-BOLD_WHITE "BOLD_WHITE\n" RESET
-BG_BLACK "BG_BLACK" RESET " "
-BG_RED "BG_RED" RESET " "
-BG_GREEN "BG_GREEN" RESET " "
-BG_YELLOW "BG_YELLOW" RESET " "
-BG_BLUE "BG_BLUE" RESET " "
-BG_MAGENTA "BG_MAGENTA" RESET " "
-BG_CYAN "BG_CYAN" RESET " "
-BG_WHITE "BG_WHITE" RESET " \n";
-
-
-const char *get_color(const char *name) {
-	if (!name) return WHITE;
-	if (strncmp(name, "BLACK", 6) == 0) return BLACK;
-	if (strncmp(name, "RED", 4) == 0) return RED;
-	if (strncmp(name, "GREEN", 6) == 0) return GREEN;
-	if (strncmp(name, "YELLOW", 7) == 0) return YELLOW;
-	if (strncmp(name, "BLUE", 5) == 0) return BLUE;
-	if (strncmp(name, "MAGENTA", 8) == 0) return MAGENTA;
-	if (strncmp(name, "CYAN", 5) == 0) return CYAN;
-	if (strncmp(name, "WHITE", 6) == 0) return WHITE;
-
-	if (strncmp(name, "BOLD_BLACK", 10) == 0) return BOLD_BLACK;
-	if (strncmp(name, "BOLD_RED", 9) == 0) return BOLD_RED;
-	if (strncmp(name, "BOLD_GREEN", 11) == 0) return BOLD_GREEN;
-	if (strncmp(name, "BOLD_YELLOW", 12) == 0) return BOLD_YELLOW;
-	if (strncmp(name, "BOLD_BLUE", 10) == 0) return BOLD_BLUE;
-	if (strncmp(name, "BOLD_MAGENTA", 13) == 0) return BOLD_MAGENTA;
-	if (strncmp(name, "BOLD_CYAN", 10) == 0) return BOLD_CYAN;
-	if (strncmp(name, "BOLD_WHITE", 11) == 0) return BOLD_WHITE;
-
-	return WHITE;
-}
 
 char *get_machine_id(void)
 {
@@ -122,38 +73,41 @@ char *get_user_name(void)
 }
 
 
-char *build_user_info(const char *machine_id, const char *user_id)
+char *build_user_info(const char *machine_id, const char *user_id, const char *colour_a, const char *colour_b)
 {
 	char *result;
 	size_t len;
+	const char *colour_a_name = get_color_name(colour_a);
+	const char *colour_b_name = get_color_name(colour_b);
 
 	if (!machine_id || !user_id)
 		return (NULL);
 
 	len = 2 + strlen(machine_id) + 1 + strlen(user_id) + 1 +
-		strlen("BLUE") + 1 + strlen("RED") + 2;
+		strlen(colour_a_name) + 1 + strlen(colour_b_name) + 2;
 
 	result = malloc(len);
 	if (!result)
 		return (NULL);
 
-	snprintf(result, len, "1;%s;%s;BLUE;RED;", machine_id, user_id);
+	snprintf(result, len, "1;%s;%s;%s;%s;", machine_id, user_id, colour_a_name, colour_b_name);
 	return (result);
 }
 
 
-char *build_colour_string(const char *machine_id, const char *username)
+char *build_colour_string(const char *machine_id, const char *username, const char *colour_a, const char *colour_b)
 {
 	char *result;
 	size_t len;
 
+	
 	if (!machine_id || !username)
 		return (NULL);
 
 
-	len = strlen(BOLD_BLUE) + strlen(machine_id) + strlen(RESET) +
+	len = strlen(colour_a) + strlen(machine_id) + strlen(RESET) +
 	      2 + 
-	      strlen(BOLD_YELLOW) + strlen(username) + strlen(RESET) +
+	      strlen(colour_b) + strlen(username) + strlen(RESET) +
 	      1 + 
 	      2; 
 
@@ -161,7 +115,7 @@ char *build_colour_string(const char *machine_id, const char *username)
 	if (!result)
 		return (NULL);
 
-	snprintf(result, len, "%s%s%s::%s%s%s: ", BOLD_BLUE, machine_id, RESET, BOLD_YELLOW, username, RESET);
+	snprintf(result, len, "%s%s%s::%s%s%s: ", colour_a, machine_id, RESET, colour_b, username, RESET);
 	return (result);
 }
 
@@ -186,3 +140,50 @@ char *strjoin(const char *s1, const char *s2)
 	return (res);
 }
 
+const char  *get_color(const char *name) {
+	if (!name) return WHITE;
+	if (strncmp(name, "BLACK", 6) == 0) return BLACK;
+	if (strncmp(name, "RED", 4) == 0) return RED;
+	if (strncmp(name, "GREEN", 6) == 0) return GREEN;
+	if (strncmp(name, "YELLOW", 7) == 0) return YELLOW;
+	if (strncmp(name, "BLUE", 5) == 0) return BLUE;
+	if (strncmp(name, "MAGENTA", 8) == 0) return MAGENTA;
+	if (strncmp(name, "CYAN", 5) == 0) return CYAN;
+	if (strncmp(name, "WHITE", 6) == 0) return WHITE;
+
+	if (strncmp(name, "BOLD_BLACK", 10) == 0) return BOLD_BLACK;
+	if (strncmp(name, "BOLD_RED", 9) == 0) return BOLD_RED;
+	if (strncmp(name, "BOLD_GREEN", 11) == 0) return BOLD_GREEN;
+	if (strncmp(name, "BOLD_YELLOW", 12) == 0) return BOLD_YELLOW;
+	if (strncmp(name, "BOLD_BLUE", 10) == 0) return BOLD_BLUE;
+	if (strncmp(name, "BOLD_MAGENTA", 13) == 0) return BOLD_MAGENTA;
+	if (strncmp(name, "BOLD_CYAN", 10) == 0) return BOLD_CYAN;
+	if (strncmp(name, "BOLD_WHITE", 11) == 0) return BOLD_WHITE;
+
+	return WHITE;
+}
+
+const char *get_color_name(const char *code)
+{
+	if (!code) return "WHITE";
+
+	if (strcmp(code, BLACK) == 0) return "BLACK";
+	if (strcmp(code, RED) == 0) return "RED";
+	if (strcmp(code, GREEN) == 0) return "GREEN";
+	if (strcmp(code, YELLOW) == 0) return "YELLOW";
+	if (strcmp(code, BLUE) == 0) return "BLUE";
+	if (strcmp(code, MAGENTA) == 0) return "MAGENTA";
+	if (strcmp(code, CYAN) == 0) return "CYAN";
+	if (strcmp(code, WHITE) == 0) return "WHITE";
+
+	if (strcmp(code, BOLD_BLACK) == 0) return "BOLD_BLACK";
+	if (strcmp(code, BOLD_RED) == 0) return "BOLD_RED";
+	if (strcmp(code, BOLD_GREEN) == 0) return "BOLD_GREEN";
+	if (strcmp(code, BOLD_YELLOW) == 0) return "BOLD_YELLOW";
+	if (strcmp(code, BOLD_BLUE) == 0) return "BOLD_BLUE";
+	if (strcmp(code, BOLD_MAGENTA) == 0) return "BOLD_MAGENTA";
+	if (strcmp(code, BOLD_CYAN) == 0) return "BOLD_CYAN";
+	if (strcmp(code, BOLD_WHITE) == 0) return "BOLD_WHITE";
+
+	return "WHITE";
+}

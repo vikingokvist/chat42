@@ -5,7 +5,8 @@ int udp_struct_init(void *manager) {
 
     t_manager *man = (t_manager*)manager;
     t_udp *udp = man->udp;
-    udp->OWN_USER_ID = build_user_info(man->OWN_MACHINE_ID, man->OWN_USERNAME);
+    udp->OWN_USER_ID = build_user_info(man->OWN_MACHINE_ID, man->OWN_USERNAME, man->colour_a, man->colour_b);
+    udp->OWN_USER_ID_LEN = strlen(udp->OWN_USER_ID);
     udp->users_table = man->users_table;
     if ((udp->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         return (perror("udp socket"), 1);
@@ -47,12 +48,12 @@ int udp_struct_init(void *manager) {
 void    *udp_send(void* arg) {
 
     t_udp    *udp = (t_udp *)arg;
-    size_t    user_len = strlen(udp->OWN_USER_ID);
 
     while (1) {
 
-        sendto(udp->sockfd, udp->OWN_USER_ID, user_len, 
-                0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
+        pthread_mutex_lock(&colour_mutex);
+        sendto(udp->sockfd, udp->OWN_USER_ID, udp->OWN_USER_ID_LEN, 0, (struct sockaddr*)&udp->send_addr, sizeof(udp->send_addr));
+        pthread_mutex_unlock(&colour_mutex);
         sleep(3);
     }
     return (NULL);
@@ -113,9 +114,9 @@ void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr,
             get_color(colour_a), new->MACHINE_ID, RESET, 
             get_color(colour_b), new->USERNAME, RESET, BOLD_WHITE, RESET);
 
-            char ip[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &new->CLIENT_ADDR.sin_addr, ip, sizeof(ip));
-            printf("(%s:%d)\n", ip, ntohs(new->CLIENT_ADDR.sin_port));
+            // char ip[INET_ADDRSTRLEN];
+            // inet_ntop(AF_INET, &new->CLIENT_ADDR.sin_addr, ip, sizeof(ip));
+            // printf("(%s:%d)\n", ip, ntohs(new->CLIENT_ADDR.sin_port));
         }
     }
     return ;
