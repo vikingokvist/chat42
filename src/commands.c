@@ -93,8 +93,18 @@ void    colour_set_command(const char *arg1, const char *arg2) {
 
     if (arg1 != NULL && arg2 != NULL) {
         pthread_mutex_lock(&colour_mutex);
-        manager->udp->OWN_USER_ID = build_user_info(manager->OWN_MACHINE_ID, manager->OWN_USERNAME, get_color(arg1), get_color(arg2));
-        manager->tcp->OWN_USER_ID = build_colour_string(manager->OWN_MACHINE_ID, manager->OWN_USERNAME, get_color(arg1), get_color(arg2));
+        FILE *fp = fopen(CONFIG_PATH, "w");
+        if (!fp) {
+            set_default_colours();
+		    perror("Unable to set colour\n");
+            pthread_mutex_unlock(&colour_mutex);
+		    return ;
+	    }
+        fprintf(fp, "COLOURS=%s::%s\n", arg1, arg2);
+        fclose(fp);
+        manager->udp->OWN_USER_ID = build_user_info(manager->OWN_MACHINE_ID, manager->OWN_USERNAME, get_colour(arg1), get_colour(arg2));
+        manager->tcp->OWN_USER_ID = build_colour_string(manager->OWN_MACHINE_ID, manager->OWN_USERNAME, get_colour(arg1), get_colour(arg2));
+        printf("%s (colour set)\n", manager->tcp->OWN_USER_ID);
         pthread_mutex_unlock(&colour_mutex);
     }
     else

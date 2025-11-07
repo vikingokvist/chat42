@@ -95,7 +95,7 @@ void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr,
 
     if (status == 0) {
 
-        hashtable_delete(udp->users_table, username, machine_id);
+        hashtable_delete(udp->users_table, username, machine_id, colour_a, colour_b);
         return ;
     }
     else if (status == 1) {
@@ -111,8 +111,8 @@ void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr,
                 return ;
             }
             printf("%s%s%s::%s%s%s %sis now online.%s\n", 
-            get_color(colour_a), new->MACHINE_ID, RESET, 
-            get_color(colour_b), new->USERNAME, RESET, BOLD_WHITE, RESET);
+            get_colour(colour_a), new->MACHINE_ID, RESET, 
+            get_colour(colour_b), new->USERNAME, RESET, BOLD_GREEN, RESET);
 
             // char ip[INET_ADDRSTRLEN];
             // inet_ntop(AF_INET, &new->CLIENT_ADDR.sin_addr, ip, sizeof(ip));

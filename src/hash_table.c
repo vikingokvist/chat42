@@ -90,7 +90,7 @@ t_client *hashtable_search(t_client **users_table, char *username) {
     return (NULL);
 }
 
-void    hashtable_delete(t_client **users_table,  char *username, char *machine_id) {
+void    hashtable_delete(t_client **users_table,  char *username, char *machine_id,  char *colour_a, char *colour_b) {
 
     if (!username)
         return ;
@@ -105,6 +105,9 @@ void    hashtable_delete(t_client **users_table,  char *username, char *machine_
                 users_table[index] = cur->next;
             else
                 prev->next = cur->next;
+            printf("%s%s%s::%s%s%s %sis now offline.%s\n", 
+            get_colour(colour_a), cur->MACHINE_ID, RESET, 
+            get_colour(colour_b), cur->USERNAME, RESET, BOLD_RED, RESET);
             free(cur);
         }
         prev = cur;

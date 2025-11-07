@@ -12,8 +12,11 @@ void signal_handler(int signo) {(void)signo;shutdown_requested = 1;}
 
 int main(int argc, char **argv) {
 
-    if (argc < 2) return (printf(HELP_MSG), 1);
-    else if (strncmp("--connect", argv[1], 9) != 0) return (1);
+    if (argc < 2)
+		return (printf(HELP_MSG), 1);
+	else if (strncmp(argv[1], "--connect", 9))
+		return (1);
+
 
     signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
@@ -21,10 +24,10 @@ int main(int argc, char **argv) {
 	manager = calloc(1, sizeof(t_manager));
 	if (!manager)
 		return (1);
-
 	if (init_manager())
 		return (free(manager), 1);
 	users_table = manager->users_table;
+
 
 
     if (udp_struct_init(manager))
@@ -36,6 +39,7 @@ int main(int argc, char **argv) {
 	char line[BUF_SIZE]; 
 	while (!shutdown_requested) { 
 
+		printf("> ");
 		fflush(stdout);
 		fgets(line, BUF_SIZE, stdin); 
 		size_t line_len = strcspn(line, "\n"); 

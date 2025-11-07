@@ -1,8 +1,5 @@
 #include "../inc/chat42.h"
 
-
-
-
 int tcp_struct_init(void *manager) {
 
     t_manager *man = (t_manager*)manager;
@@ -62,7 +59,7 @@ void send_tcp_message(t_client *client, const char *msg, t_tcp *tcp)
 
 	if (connect(client_sockfd, (struct sockaddr*)&client->CLIENT_ADDR, sizeof(client->CLIENT_ADDR)) < 0) {
 
-        perror("tcp connect");
+        perror("User is offline.\n");
 		close(client_sockfd);
         pthread_mutex_unlock(&msg_mutex);
 		return ;
@@ -94,8 +91,9 @@ void* tcp_thread_func(void* arg) {
         }
         buffer[n] = '\0'; 
         pthread_mutex_lock(&msg_mutex);
-        printf("\r\33[K");               // clear current line
-        printf("%s\n", buffer);          // print incoming message
+        printf("\r\33[K");
+        printf("%s\n", buffer);
+        printf("> ");
         fflush(stdout);
         pthread_mutex_unlock(&msg_mutex);
         write(newsockfd, "OK\n", 3);

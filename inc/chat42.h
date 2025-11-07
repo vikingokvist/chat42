@@ -8,7 +8,8 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <signal.h>
-
+#include <readline/readline.h>
+#include <readline/history.h>
 
 //-------------------------------------------------------------------------------------------------------NETWORKING VARS
 #define TCP_PORT 5000
@@ -19,6 +20,7 @@
 #define BUF_SIZE 1024
 #define TABLE_MAX_SIZE 6
 #define UDP_REGEX "%d;%63[^;];%63[^;];%63[^;];%63[^;];"
+#define CONFIG_PATH ".usr_info.txt"
 //-------------------------------------------------------------------------------------------------------NETWORKING VARS
 
 
@@ -36,7 +38,7 @@ extern t_client **users_table;
 
 void            hashtable_clear(t_client **users_table);
 t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
-void            hashtable_delete(t_client **users_table, char *username, char *machine_id);
+void            hashtable_delete(t_client **users_table, char *username, char *machine_id, char *colour_a, char *colour_b);
 t_client        *hashtable_search(t_client **users_table, char *username);
 int             hashtable_insert(t_client **users_table, t_client *new_user);
 ssize_t         hashtable_hash(char *username);
@@ -112,6 +114,8 @@ extern t_manager *manager;
 void            cleanup_and_exit();
 int             init_manager(void);
 void            signal_handler(int signo);
+void            get_usr_file_colours();
+void            set_default_colours();
 //-------------------------------------------------------------------------------------------------------MANAGER STRUCT 
 
 
@@ -122,7 +126,7 @@ char            *build_user_info(const char *machine_id, const char *user_id, co
 char            *build_colour_string(const char *machine_id, const char *username, const char *colour_a, const char *colour_b);
 char            *get_user_name(void);
 char            *get_machine_id(void);
-const char      *get_color(const char *name);
+char            *get_colour(const char *name);
 const char       *get_color_name(const char *code);
 char            *strjoin(const char *s1, const char *s2);
 //-------------------------------------------------------------------------------------------------------UTILS
@@ -159,7 +163,9 @@ These are common chat42 commands used in various situations:\n\n\
   --version                      State current version.\n\
   --colour-list                  List all ANSI colours.\n\
   --colour-set <colour::colour>  Set profile colours.\n\
-  <username> + <message>         Send message to username.\n"
+  <username> + <message>         Send message to username.\n\
+\n\
+Example: chat42 --colour-set BLUE::GREEN\n"
 
 #define VERSION_MSG "chat42 pre-pre-alpha 0.0.1\n"
 #define RESET       "\x1b[0m"

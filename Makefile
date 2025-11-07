@@ -6,6 +6,13 @@ LDFLAGS = -lpthread
 
 RM = rm -rf
 
+WHITE = \033[1;37m
+GREEN = \033[1;32m
+RED  =  \033[1;31m
+ORANGE  = \033[1;38;5;208m
+RESET = \033[0m
+
+
 SRCS = src/main.c \
 	src/tcp_thread.c \
 	src/udp_thread.c \
@@ -27,32 +34,29 @@ TEST_IP = $(shell ip -4 addr show wlp13s0 | grep -oP '(?<=brd\s)\d+(\.\d+){3}')
 
 all: CFLAGS += -DSEND_IP=\"$(SEND_IP)\"
 all: $(NAME)
-	@echo "Using SEND_IP: $(SEND_IP)"
+	@echo "Using IP: $(SEND_IP)"
+	@echo "$(WHITE)Execute with ./chat42 --connect$(RESET)"
 
-
-test: CFLAGS += -DSEND_IP=\"$(TEST_IP)\"
-test: $(NAME)
-	@echo "Using TEST_IP: $(TEST_IP)"
+local: CFLAGS += -DSEND_IP=\"$(TEST_IP)\"
+local: $(NAME)
+	@echo "Using IP: $(TEST_IP)"
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(NAME): $(OBJS)
-	@echo "Compiling files..."
+	@echo "$(GREEN)Files Compiled$(RESET)"
 	@$(CC) $(OBJS) $(LDFLAGS) -o $(NAME)
-	@echo "DONE"
 
 clean:
-	@echo "Removing executable..."
+	@echo "$(ORANGE)Executable Removed$(RESET)"
 	@$(RM) $(OBJDIR)
-	@echo "DONE"
 
 fclean:
-	@echo "Removing object files..."
-	@echo "Removing executable..."
+	@echo "$(ORANGE)Executable Removed$(RESET)"
+	@echo "$(RED)Object Files Removed$(RESET)"
 	@$(RM) $(OBJDIR) $(NAME)
-	@echo "DONE"
 
 re: fclean clean all
 

@@ -13,8 +13,7 @@ int	init_manager(void) {
 	manager->tcp = calloc(1, sizeof(t_tcp));
 	if (!manager->tcp)
 		return (free(manager->udp), free(manager->users_table), 1);
-	manager->colour_a = BOLD_BLUE;
-	manager->colour_b = BOLD_YELLOW;
+	get_usr_file_colours();
 	manager->OWN_USERNAME = get_user_name();
 	manager->OWN_MACHINE_ID = get_machine_id();
 	return (0);
@@ -28,8 +27,8 @@ void cleanup_and_exit() {
 
 	t_udp *UDP = manager->udp;
 	t_tcp *TCP = manager->tcp;
-	size_t user_len = strlen(UDP->OWN_USER_ID);
     memcpy(UDP->OWN_USER_ID, "0;", 2);
+	size_t user_len = strlen(UDP->OWN_USER_ID);
 
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 		t_client *cur = UDP->users_table[i];
@@ -66,24 +65,43 @@ void cleanup_and_exit() {
 	exit(0);
 }
 
-/*
-	if (strcmp(arg, "--help") == 0)
-		handle_help();
-	else if (strcmp(arg, "--version") == 0)
-		handle_version();
-	else if (strcmp(arg, "--login") == 0)
-		handle_login();
-	else if (strcmp(arg, "--disconnect") == 0)
-		cleanup_and_exit();
-	else if (strcmp(arg, "--colour-list") == 0)
-		handle_colour_list();
-	else if (strncmp(arg, "--colour-set", 12) == 0)
-		handle_colour_set(rest);
-	else if (strcmp(arg, "--block") == 0) {
-		if (!rest || *rest == '\0')
-			printf("usage: chat42 --block <username>\n");
-		else
-			handle_block(rest);
+void	set_default_colours() {
+
+	FILE *fp = fopen(CONFIG_PATH, "w");
+	if (!fp)
+		return ;
+	fprintf(fp, "COLOURS=BOLD_WHITE::BOLD_WHITE\n");
+	fclose(fp);
+	manager->colour_a = BOLD_WHITE;
+	manager->colour_b = BOLD_WHITE;	
+}
+
+void	get_usr_file_colours() {
+
+	FILE *fp = fopen(CONFIG_PATH, "r");
+	if (!fp) {
+		set_default_colours();
+		return ;
 	}
-	else {
-*/
+	char line[BUF_SIZE];
+	char colours[2][64];
+	char *p;
+	if (!fgets(line, sizeof(line), fp)) {
+		fclose(fp);
+		set_default_colours();
+	}
+	fclose(fp);
+	if (strncmp(line, "COLOURS=", 8) != 0) {
+		set_default_colours();
+		return;
+	}
+	p = line + 8;
+	if (sscanf(p, "%63[^:]::%63s", colours[0], colours[1]) != 2) {
+		set_default_colours();
+		return;
+	}
+	manager->colour_a = get_colour(colours[0]);
+	manager->colour_b = get_colour(colours[1]);
+	return ;
+}
+

@@ -140,7 +140,7 @@ char *strjoin(const char *s1, const char *s2)
 	return (res);
 }
 
-const char  *get_color(const char *name) {
+char  *get_colour(const char *name) {
 	if (!name) return WHITE;
 	if (strncmp(name, "BLACK", 6) == 0) return BLACK;
 	if (strncmp(name, "RED", 4) == 0) return RED;
