@@ -55,7 +55,7 @@ void    handle_commands(const char *input, t_tcp *tcp) {
 
 
 	pthread_mutex_lock(&hash_table_mutex); 
-	t_client *client = hashtable_search(users_table, cmd); 
+	t_client *client = ht_search(users_table, cmd); 
 	if (!client) { 
 		printf("User '%s' not found\n", cmd); fflush(stdout);
 		return ((void)pthread_mutex_unlock(&hash_table_mutex)); 
@@ -77,7 +77,7 @@ void    help_command(const char *arg1, const char *arg2) {
 
 void    disconnect_command(const char *arg1, const char *arg2) {
     if (arg1 == NULL && arg2 == NULL)
-        cleanup_and_exit(); 
+        exit_manager(); 
     else
         printf("Usage: chat42 --disconnect\n");
 }

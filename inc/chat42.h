@@ -35,15 +35,19 @@ typedef struct s_client {
 }   t_client;
 
 extern t_client **users_table;
+extern pthread_mutex_t  hash_table_mutex;
+extern pthread_mutex_t  colour_mutex;
+extern pthread_mutex_t	msg_mutex;
+extern pthread_mutex_t	autocomplete_mutex;
 
-void            hashtable_clear(t_client **users_table);
-t_client        *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
-void            hashtable_delete(t_client **users_table, char *username, char *machine_id, char *colour_a, char *colour_b);
-t_client        *hashtable_search(t_client **users_table, char *username);
-int             hashtable_insert(t_client **users_table, t_client *new_user);
-ssize_t         hashtable_hash(char *username);
+void            ht_clear(t_client **users_table);
+t_client        *ht_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id);
+t_client        *ht_delete(t_client **users_table,  char *username, char *machine_id);
+t_client        *ht_search(t_client **users_table, char *username);
+int             ht_insert(t_client **users_table, t_client *new_user);
+ssize_t         ht_hash(char *username);
 void            print_client(t_client **users_table);
-void            hashtable_init(t_client **users_table);
+void            ht_init(t_client **users_table);
 //-------------------------------------------------------------------------------------------------------HASH TABLE
 
 
@@ -69,9 +73,8 @@ void            *tcp_thread_func(void* tcp_struct);
 void            send_tcp_message(t_client *client, const char *msg, t_tcp *tcp);
 //-------------------------------------------------------------------------------------------------------TCP THREAD
 
-extern pthread_mutex_t  hash_table_mutex;
-extern pthread_mutex_t  colour_mutex;
-extern pthread_mutex_t	msg_mutex;
+
+
 
 //-------------------------------------------------------------------------------------------------------UDP THREAD
 typedef struct s_udp {
@@ -91,9 +94,28 @@ typedef struct s_udp {
 int             udp_struct_init(void *manager);
 void            *udp_send(void* arg);
 void            *udp_receive(void* arg);
-void            udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr, 
-                                char *username, char *machine_id, char *color_a, char *color_b);
+void            udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr, char *username, char *machine_id, char *color_a, char *color_b);
+void            udp_send_disconnect_msg(t_udp *udp);
 //-------------------------------------------------------------------------------------------------------UDP THREAD
+
+
+
+
+//-------------------------------------------------------------------------------------------------------AUTOCOMPLETE
+typedef struct s_client_names {
+
+    char *name;
+    struct s_client_names *next;
+
+}             t_client_names;
+
+char    **init_autocomplete(const char *text, int start, int end);
+void	  free_autocomplete(t_client_names **head);
+char    *find_autocomplete(const char *text, int state);
+void	  remove_user_autocomplete(const char *username);
+void    add_user_autocomplete(const char *username);
+
+//-------------------------------------------------------------------------------------------------------AUTOCOMPLETE
 
 
 
@@ -108,16 +130,19 @@ typedef struct s_manager
     char            *OWN_MACHINE_ID;
     char            *colour_a;
     char            *colour_b;
+    t_client_names  *client_table_names;
 }             t_manager;
 
 extern t_manager *manager;
-void            cleanup_and_exit();
+void            exit_manager();
 int             init_manager(void);
 void            signal_handler(int signo);
+void            exit_and_free_udp();
+void            exit_and_free_tcp();
+void            exit_and_free_manager();
 void            get_usr_file_colours();
 void            set_default_colours();
 //-------------------------------------------------------------------------------------------------------MANAGER STRUCT 
-
 
 
 
@@ -130,6 +155,7 @@ char            *get_colour(const char *name);
 const char       *get_color_name(const char *code);
 char            *strjoin(const char *s1, const char *s2);
 //-------------------------------------------------------------------------------------------------------UTILS
+
 
 
 

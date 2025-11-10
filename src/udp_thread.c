@@ -94,32 +94,52 @@ void    *udp_receive(void* arg) {
 void    udp_handle_user(int status, t_udp *udp, struct sockaddr_in *new_cliaddr, char *username, char *machine_id, char *colour_a, char *colour_b) {
 
     if (status == 0) {
+        t_client *found = ht_delete(udp->users_table, username, machine_id);
+        if (found) {
 
-        hashtable_delete(udp->users_table, username, machine_id, colour_a, colour_b);
+            printf("%s%s%s::%s%s%s %sis now offline.%s\n", get_colour(colour_a), found->MACHINE_ID, RESET, get_colour(colour_b), found->USERNAME, RESET, BOLD_RED, RESET);
+            remove_user_autocomplete(found->USERNAME);
+            free(found);
+        }
         return ;
     }
     else if (status == 1) {
 
-        if (hashtable_search(udp->users_table, username) == NULL) {
+        if (ht_search(udp->users_table, username) == NULL) {
 
-            t_client *new = hashtable_add(new_cliaddr, username, machine_id);
+            t_client *new = ht_add(new_cliaddr, username, machine_id);
             if (!new)
                 return ;
 
-            if (hashtable_insert(udp->users_table, new)) {
+            if (ht_insert(udp->users_table, new)) {
                 free(new);
                 return ;
             }
-            printf("%s%s%s::%s%s%s %sis now online.%s\n", 
-            get_colour(colour_a), new->MACHINE_ID, RESET, 
-            get_colour(colour_b), new->USERNAME, RESET, BOLD_GREEN, RESET);
-
+            printf("%s%s%s::%s%s%s %sis now online.%s\n",  get_colour(colour_a), new->MACHINE_ID, RESET,  get_colour(colour_b), new->USERNAME, RESET, BOLD_GREEN, RESET);
+            add_user_autocomplete(new->USERNAME);
             // char ip[INET_ADDRSTRLEN];
             // inet_ntop(AF_INET, &new->CLIENT_ADDR.sin_addr, ip, sizeof(ip));
             // printf("(%s:%d)\n", ip, ntohs(new->CLIENT_ADDR.sin_port));
         }
     }
     return ;
+}
+
+void    udp_send_disconnect_msg(t_udp *udp) {
+
+    memcpy(udp->OWN_USER_ID, "0;", 2);
+	size_t user_len = strlen(udp->OWN_USER_ID);
+
+	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
+
+		t_client *cur = udp->users_table[i];
+		while (cur) {
+			
+            sendto(udp->sockfd, udp->OWN_USER_ID, user_len, 0, 
+                (struct sockaddr*)&cur->CLIENT_ADDR, sizeof(cur->CLIENT_ADDR));
+			cur = cur->next;
+		}
+	}
 }
 
 

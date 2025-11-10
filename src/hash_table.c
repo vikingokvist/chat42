@@ -1,13 +1,13 @@
 #include "../inc/chat42.h"
 
-void    hashtable_init(t_client **users_table) {
+void    ht_init(t_client **users_table) {
 
     for (int i = 0; i < TABLE_MAX_SIZE; i++) {
         users_table[i] = NULL;
     }
 }
 
-void    hashtable_clear(t_client **users_table)
+void    ht_clear(t_client **users_table)
 {
 	for (int i = 0; i < TABLE_MAX_SIZE; i++) {
 		t_client *cur = users_table[i];
@@ -40,7 +40,7 @@ void print_client(t_client **users_table) {
     }
 }
 
-ssize_t hashtable_hash(char *username) {
+ssize_t ht_hash(char *username) {
 
     if (!username)
         return (-1);
@@ -55,46 +55,48 @@ ssize_t hashtable_hash(char *username) {
 }
 
 
-int hashtable_insert(t_client **users_table, t_client *new_user) {
+int ht_insert(t_client **users_table, t_client *new_user) {
 
     if (!new_user || !new_user->USERNAME[0])
         return (1);
-    int index = hashtable_hash(new_user->USERNAME);
+    int index = ht_hash(new_user->USERNAME);
     t_client *cur = users_table[index];
     new_user->next = NULL;
     if (cur == NULL) {
         users_table[index] = new_user;
+        add_user_autocomplete(new_user->USERNAME);
         return (0);
     }
     while (cur->next)
         cur = cur->next;
     cur->next = new_user;
+    add_user_autocomplete(new_user->USERNAME);
     return (0);
 }
 
-t_client *hashtable_search(t_client **users_table, char *username) {
+t_client    *ht_search(t_client **users_table, char *username)
+{
+	int     index;
+	t_client *cur;
 
-    if (!username)
-        return (NULL);
-    int index = hashtable_hash(username);
-    t_client *cur = users_table[index];
-    if (users_table[index] == NULL)
-        return (NULL);
+	if (!users_table || !username)
+		return (NULL);
 
-    while (cur) {
-        if (!strcmp(username, cur->USERNAME))
-            return (cur);
-        cur = cur->next;
-    }
-
-    return (NULL);
+	index = ht_hash(username);
+	cur = users_table[index];
+	while (cur) {
+		if (!strcmp(cur->USERNAME, username))
+			return (cur);
+		cur = cur->next;
+	}
+	return (NULL);
 }
 
-void    hashtable_delete(t_client **users_table,  char *username, char *machine_id,  char *colour_a, char *colour_b) {
+t_client*    ht_delete(t_client **users_table,  char *username, char *machine_id) {
 
     if (!username)
-        return ;
-    int index = hashtable_hash(username);
+        return (NULL);;
+    int index = ht_hash(username);
     t_client *cur = users_table[index];
     t_client *prev = NULL;
 
@@ -105,17 +107,16 @@ void    hashtable_delete(t_client **users_table,  char *username, char *machine_
                 users_table[index] = cur->next;
             else
                 prev->next = cur->next;
-            printf("%s%s%s::%s%s%s %sis now offline.%s\n", 
-            get_colour(colour_a), cur->MACHINE_ID, RESET, 
-            get_colour(colour_b), cur->USERNAME, RESET, BOLD_RED, RESET);
-            free(cur);
+            cur->next = NULL;
+            return (cur);
         }
         prev = cur;
         cur = cur->next;
     }
+    return (NULL);
 }
 
-t_client *hashtable_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id)
+t_client *ht_add(struct sockaddr_in *new_cliaddr, char *username, char *machine_id)
 {
     if (!new_cliaddr || !username || !machine_id)
         return (NULL);

@@ -51,9 +51,7 @@ void send_tcp_message(t_client *client, const char *msg, t_tcp *tcp)
 	int         client_sockfd;
     char        *user_msg;
 
-    pthread_mutex_lock(&msg_mutex);
 	if ((client_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        pthread_mutex_unlock(&msg_mutex);
         return ;
     }
 
@@ -61,14 +59,12 @@ void send_tcp_message(t_client *client, const char *msg, t_tcp *tcp)
 
         perror("User is offline.\n");
 		close(client_sockfd);
-        pthread_mutex_unlock(&msg_mutex);
 		return ;
 	}
     user_msg = strjoin(tcp->OWN_USER_ID, msg);
 	write(client_sockfd, user_msg, strlen(user_msg));
 	close(client_sockfd);
     free(user_msg);
-    pthread_mutex_unlock(&msg_mutex);
 }
 
 void* tcp_thread_func(void* arg) {
@@ -90,15 +86,15 @@ void* tcp_thread_func(void* arg) {
             continue;
         }
         buffer[n] = '\0'; 
-        pthread_mutex_lock(&msg_mutex);
-        printf("\r\33[K");
+        write(STDOUT_FILENO, "\r\33[K", 4);
         printf("%s\n", buffer);
-        fflush(stdout);
-        pthread_mutex_unlock(&msg_mutex);
+        rl_on_new_line();
+        rl_redisplay();
         write(newsockfd, "OK\n", 3);
         close(newsockfd);
 
     }
+    return (NULL);
 }
 
 

@@ -2,7 +2,7 @@ NAME = chat42
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -MMD -MP
-LDFLAGS = -lpthread
+LDFLAGS = -lpthread -lreadline -lncurses
 
 RM = rm -rf
 
@@ -18,8 +18,9 @@ SRCS = src/main.c \
 	src/udp_thread.c \
 	src/utils.c \
 	src/hash_table.c \
-	src/exit.c  \
-	src/commands.c
+	src/manager.c \
+	src/commands.c \
+	src/autocomplete.c
 
 OBJDIR = objs
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.c=.o))
