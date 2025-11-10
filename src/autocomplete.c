@@ -35,9 +35,7 @@ char	*find_autocomplete(const char *text, int state) {
 	static t_client_names	*cur_user = NULL;
 	t_client_names			*head;
 	char					*match = NULL;
-	static const char		*server_cmds[] = {
-		"--help", "--disconnect", "--colour-list", "--colour-set", "--version", NULL
-	};
+	static const char		*server_cmds[] = {"--help", "--disconnect", "--colour-list", "--colour-set", "--version", NULL};
 	
 	pthread_mutex_lock(&autocomplete_mutex);
 	head = manager->client_table_names;

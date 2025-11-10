@@ -88,8 +88,6 @@ void* tcp_thread_func(void* arg) {
         buffer[n] = '\0'; 
         write(STDOUT_FILENO, "\r\33[K", 4);
         printf("%s\n", buffer);
-        rl_on_new_line();
-        rl_redisplay();
         write(newsockfd, "OK\n", 3);
         close(newsockfd);
 

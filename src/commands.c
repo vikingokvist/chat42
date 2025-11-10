@@ -20,7 +20,7 @@ command_func_t    is_server_command(char *cmd) {
 
 void    handle_commands(const char *input, t_tcp *tcp) {
 
-	char chat42[32], cmd[128], msg[BUF_SIZE];
+	char chat42[32], cmd_or_user[128], msg[BUF_SIZE];
     char arg1[64], arg2[64];
 	int offset = 0;
     command_func_t func;
@@ -30,13 +30,13 @@ void    handle_commands(const char *input, t_tcp *tcp) {
 	if (strcmp(chat42, "chat42") != 0)
         return ; 
 	input += offset;
-	if (sscanf(input, "%127s%n", cmd, &offset) != 1)
+	if (sscanf(input, "%127s%n", cmd_or_user, &offset) != 1)
         return ;
 	input += offset;
 	while (*input == ' ') 
 		input++;
     
-    if ((func = is_server_command(cmd)) != NULL) {
+    if ((func = is_server_command(cmd_or_user)) != NULL) {
         if (sscanf(input, "%63[^:]::%63s", arg1, arg2) == 2) {
             func(arg1, arg2);
             return ;
@@ -55,9 +55,9 @@ void    handle_commands(const char *input, t_tcp *tcp) {
 
 
 	pthread_mutex_lock(&hash_table_mutex); 
-	t_client *client = ht_search(users_table, cmd); 
+	t_client *client = ht_search(users_table, cmd_or_user); 
 	if (!client) { 
-		printf("User '%s' not found\n", cmd); fflush(stdout);
+		printf("User '%s' not found\n", cmd_or_user); fflush(stdout);
 		return ((void)pthread_mutex_unlock(&hash_table_mutex)); 
 	} 
 	fflush(stdout);
