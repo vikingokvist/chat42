@@ -1,22 +1,34 @@
 #include "../inc/chat42.h"
 
+volatile sig_atomic_t	shutdown_requested = 0;
 
-command_func_t    is_server_command(char *cmd) {
+void    signal_handler(int signo) {
 
-    static struct command_entry commands[SERVER_COMMAND_COUNT] = {
-	{ "--help", help_command },
-	{ "--disconnect", disconnect_command },
-	{ "--colour-list", colour_list_command },
-	{ "--colour-set", colour_set_command },
-	{ "--version", version_command }
-    };
-
-    for (int i = 0; i < SERVER_COMMAND_COUNT; i++)
-        if (!strcmp(cmd, commands[i].name))
-            return (commands[i].func);
-    return (NULL);
+	(void)signo;shutdown_requested = 1;
+	rl_done = 1;
+	write(STDOUT_FILENO, "\n", 1); 
 }
 
+void     command_loop(void) {
+
+    rl_attempted_completion_function = init_autocomplete;
+	rl_bind_key('\t', rl_complete);
+
+    while (!shutdown_requested) { 
+
+		char *input = readline("");
+ 		if (shutdown_requested) {
+			if (input)
+            	free(input);
+            return ;
+        }
+		if (*input)
+			add_history(input);
+		handle_commands(input, manager->tcp);
+		free(input);
+	}
+    return ;
+}
 
 void    handle_commands(const char *input, t_tcp *tcp) {
 
@@ -65,6 +77,22 @@ void    handle_commands(const char *input, t_tcp *tcp) {
 	send_tcp_message(client, msg, tcp);
     pthread_mutex_unlock(&colour_mutex);
 	pthread_mutex_unlock(&hash_table_mutex);
+}
+
+command_func_t    is_server_command(char *cmd) {
+
+    static struct command_entry commands[SERVER_COMMAND_COUNT] = {
+	{ "--help", help_command },
+	{ "--disconnect", disconnect_command },
+	{ "--colour-list", colour_list_command },
+	{ "--colour-set", colour_set_command },
+	{ "--version", version_command }
+    };
+
+    for (int i = 0; i < SERVER_COMMAND_COUNT; i++)
+        if (!strcmp(cmd, commands[i].name))
+            return (commands[i].func);
+    return (NULL);
 }
 
 void    help_command(const char *arg1, const char *arg2) { 

@@ -37,11 +37,11 @@ int tcp_struct_init(void *manager) {
         return (1);
     }
     
-    if (pthread_create(&tcp->send_thread, NULL, tcp_thread_func, (void*)tcp) == -1) {
+    // if (pthread_create(&tcp->send_thread, NULL, tcp_thread_func, (void*)tcp) == -1) {
 
-        perror("tcp thread");
-        return (1);
-    }
+    //     perror("tcp thread");
+    //     return (1);
+    // }
 
     return (0);
 }

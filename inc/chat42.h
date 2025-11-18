@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/select.h>
 
 //-------------------------------------------------------------------------------------------------------NETWORKING VARS
 #define TCP_PORT 5000
@@ -169,7 +170,7 @@ struct command_entry {
 
 };
 
-
+void              command_loop(void);
 void              handle_commands(const char *input, t_tcp *tcp);
 command_func_t    is_server_command(char *cmd);
 void              help_command(const char *arg1, const char *arg2);

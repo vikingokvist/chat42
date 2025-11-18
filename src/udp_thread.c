@@ -33,15 +33,6 @@ int udp_struct_init(void *manager) {
     if (inet_pton(AF_INET, SEND_IP, &udp->send_addr.sin_addr) <= 0) {
         return (perror("inet_pton for send_addr failed"), 1);
     }
-
-
-    if (pthread_create(&udp->send_thread, NULL, udp_send, (void*)udp) == -1) {
-        return (perror("udp send thread"), 1);
-    }
-    if (pthread_create(&udp->receive_thread, NULL, udp_receive, (void*)udp) == -1) {
-        return (perror("udp send thread"), 1);
-    }
-
     return (0);
 }
 
